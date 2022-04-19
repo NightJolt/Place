@@ -5,7 +5,14 @@ project(${PROJECT_NAME})
 
 set(CMAKE_CXX_STANDARD 20)
 
-if (UNIX AND NOT APPLE)
+if (WIN32)
+
+    add_subdirectory(FunEngine2D)
+
+    add_subdirectory(Client)
+    add_subdirectory(Server)
+
+elseif (UNIX AND NOT APPLE)
 
     # NEEDS UPDATE!
 
@@ -37,11 +44,6 @@ if (UNIX AND NOT APPLE)
 
     # #target_link_libraries(${PROJECT_NAME} ${LUA_LIBRARIES})
     # target_link_libraries(${PROJECT_NAME} ImGui-SFML::ImGui-SFML)
-
-elseif (WIN32)
-    add_subdirectory(FunEngine2D)
-
-    add_subdirectory(Client)
 
 elseif (APPLE)
 
