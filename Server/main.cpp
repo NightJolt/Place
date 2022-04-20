@@ -6,11 +6,22 @@
 #include "../FunEngine2D/core/include/networking/server.h"
 #include "../FunEngine2D/core/include/_math.h"
 
-// namespace std {
-//     template <> struct hash<fun::vec2i_t> {
-//         size_t operator()(const fun::vec2i_t& v) const {
-//             return (v.x + v.y) * (v.x + v.y + 1) >> 1 + v.x;
-//         }
+namespace std {
+    template <> struct hash<fun::vec2i_t> {
+        size_t operator()(const fun::vec2i_t& v) const {
+            return (v.x + v.y) * (v.x + v.y + 1) >> 1 + v.x;
+        }
+    };
+}
+
+// namespace std
+// {
+//     template<> struct less<fun::vec2i_t>
+//     {
+//        bool operator() (const fun::vec2i_t& a, const fun::vec2i_t& b) const
+//        {
+//            return (a.x * a.y) < (b.x * b.y);
+//        }
 //     };
 // }
 
@@ -39,8 +50,12 @@ public:
     static constexpr uint8_t size_y = 16;
 
     chunk_t <size_x, size_y>* get_chunk(int32_t x, int32_t y) {
-        const auto coord = fun::vec2i_t { (x < 0 ? (x * -1 - 1) : x), (y < 0 ? (y * -1 - 1) : y) };
+        auto coord = fun::vec2i_t { (x < 0 ? (x * -1 - 1) : x), (y < 0 ? (y * -1 - 1) : y) };
 
+        if (!data.contains(coord)) {
+            data.emplace(coord, new chunk_t <size_x, size_y> ());
+        }
+        
         return data[coord];
     }
 
@@ -53,7 +68,9 @@ public:
     }
 
 private:
-    std::map <fun::vec2i_t, chunk_t <size_x, size_y>*> data;
+    std::unordered_map <fun::vec2i_t, chunk_t <size_x, size_y>*,
+        decltype([](const fun::vec2i_t& v) -> size_t const { return std::hash <fun::vec2i_t> () (v); }),
+        decltype([](const fun::vec2i_t& a, const fun::vec2i_t& b) -> bool const { return a == b; })> data;
 };
 
 int main () {
@@ -66,7 +83,7 @@ int main () {
     canvas_t canvas;
 
     canvas.set_color(3, 4, color_t(2, 2, 2));
-    println(canvas.get_color(3, 4).r);
+    println(+canvas.get_color(3, 4).r);
     
     while (window->render.isOpen()) {
         fun::time::recalculate();
