@@ -9,8 +9,9 @@ if (WIN32)
 
     add_subdirectory(FunEngine2D)
 
-    add_subdirectory(Client)
-    add_subdirectory(Server)
+    add_subdirectory(common)
+    add_subdirectory(client)
+    add_subdirectory(server)
 
 elseif (UNIX AND NOT APPLE)
 
