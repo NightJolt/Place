@@ -12,27 +12,19 @@
 #include "../common/include/chunk.h"
 
 namespace std {
-    template <> struct hash<fun::vec2i_t> {
+    template <>
+    struct hash<fun::vec2i_t> {
         size_t operator()(const fun::vec2i_t& v) const {
             return (v.x + v.y) * (v.x + v.y + 1) >> 1 + v.x;
         }
     };
 }
 
-// namespace std
-// {
-//     template<> struct less<fun::vec2i_t>
-//     {
-//        bool operator() (const fun::vec2i_t& a, const fun::vec2i_t& b) const
-//        {
-//            return (a.x * a.y) < (b.x * b.y);
-//        }
-//     };
-// }
-
 template <uint8_t X, uint8_t Y>
 class chunk_t {
 public:
+
+    chunk_t() { std::fill(*data, *data + X * Y, fun::rgb_t { 0, 0, 0 }); }
 
     inline fun::rgb_t get_color(uint8_t x, uint8_t y) { return data[x][y]; }
     inline void set_color(uint8_t x, uint8_t y, fun::rgb_t color) { data[x][y] = color; }
@@ -79,6 +71,7 @@ private:
 // b - set chunk subscribtion range
 
 int main () {
+    fun::winmgr::init(fun::winmgr::window_data_t("Place Server"));
     auto* window = fun::winmgr::main_window;
 
     fun::server_t server;
@@ -97,8 +90,6 @@ int main () {
             fun::packet_storage_t::packet_t packet = packet_storage.read();
             fun::command_t command_parser = fun::command_t(packet.data);
             const std::string& command = command_parser.get_command();
-
-            println(command);
 
             if (command == "f") {
                 space::chunk_pos_t x = std::stoi(command_parser.get_arg(0));
@@ -119,9 +110,8 @@ int main () {
 
                 canvas.set_color(pos.x, pos.y, color);
 
-                fun::rgb_t col = canvas.get_color(pos.x, pos.y);
-
-                printf("color: %d %d %d\n", col.r, col.g, col.b);
+                // todo: change this
+                server.send_all("s " + std::to_string(pos.x) + " " + std::to_string(pos.y) + " " + std::to_string(color.r) + " " + std::to_string(color.g) + " " + std::to_string(color.b));
             }
         }
 

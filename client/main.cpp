@@ -6,6 +6,8 @@
 #include "../FunEngine2D/core/include/networking/server.h"
 #include "../FunEngine2D/core/include/input.h"
 
+#include "../common/include/chunk.h"
+
 // t - teleport to coordinates
 // s - set pixel color
 // g - get pixel color
@@ -24,8 +26,32 @@ int main () {
         fun::winmgr::update();
         fun::input::listen();
 
-        client.receive();
         if (fun::input::pressed(sf::Keyboard::Space)) client.send("s 1 2 255 150 0");
+
+        client.receive();
+        
+        auto& packet_storage = client.get_packets();
+
+        if (!packet_storage.empty()) {
+            fun::packet_storage_t::packet_t packet = packet_storage.read();
+            fun::command_t command_parser = fun::command_t(packet.data);
+            const std::string& command = command_parser.get_command();
+
+            if (command == "s") {
+                fun::vec2_t pos = {
+                    std::stoi(command_parser.get_arg(0)),
+                    std::stoi(command_parser.get_arg(1))
+                };
+
+                fun::rgb_t color = {
+                    (uint8_t)std::stoi(command_parser.get_arg(2)),
+                    (uint8_t)std::stoi(command_parser.get_arg(3)),
+                    (uint8_t)std::stoi(command_parser.get_arg(4))
+                };
+                
+                // ! smth here
+            }
+        }
 
         window->display(sf::Color::Black);
     }

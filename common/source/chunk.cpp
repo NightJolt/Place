@@ -3,34 +3,56 @@
 std::string space::chunk::encode(chunk_pos_t px, chunk_pos_t py, chunk_size_t sx, chunk_size_t sy, fun::rgb_t* data) {
     size_t mem_size = sizeof chunk_pos_t * 2 + sx * sy * sizeof fun::rgb_t + 1;
 
-    char* ptr = (char*)malloc(mem_size);
-    uint32_t pos = 0;
+    std::string encoded_data;
+    encoded_data.resize(mem_size);
+
+    char* ptr = &*encoded_data.begin();
 
     *(chunk_pos_t*)ptr = px;
-    *(chunk_pos_t*)(ptr + sizeof chunk_pos_t) = py;
+    ptr += sizeof chunk_pos_t;
 
-    pos += sizeof chunk_pos_t * 2;
+    *(chunk_pos_t*)ptr = py;
+    ptr += sizeof chunk_pos_t;
 
-    for (texel_local_pos_t x = 0; x < sx; x++) {
-        for (texel_local_pos_t y = 0; y < sy; y++) {
-            fun::rgb_t color = *(data + x * sx + y);
+    for (texel_local_pos_t i = 0; i < sx * sy; i++) {
+        *(fun::rgb_t*)ptr = *(data + i);
 
-            *(uint8_t*)(ptr + pos) = color.r;
-            pos += sizeof uint8_t;
+        ptr += sizeof fun::rgb_t;
 
-            *(uint8_t*)(ptr + pos) = color.g;
-            pos += sizeof uint8_t;
+        // fun::rgb_t color = *(data + i);
 
-            *(uint8_t*)(ptr + pos) = color.b;
-            pos += sizeof uint8_t;
-        }
+        // *(uint8_t*)ptr = color.r;
+        // ptr += sizeof uint8_t;
+
+        // *(uint8_t*)ptr = color.g;
+        // ptr += sizeof uint8_t;
+
+        // *(uint8_t*)ptr = color.b;
+        // ptr += sizeof uint8_t;
     }
 
-    *(uint8_t*)(ptr + pos) = '\n';
-
-    std::string encoded_data(ptr);
-
-    free(ptr);
+    *(uint8_t*)ptr = '\n';
 
     return encoded_data;
+}
+
+std::vector <uint8_t> space::chunk::decode(std::string data, chunk_size_t sx, chunk_size_t sy, chunk_pos_t* px, chunk_pos_t* py) {
+    std::vector <uint8_t> texels;
+    texels.resize(sx * sy);
+
+    char* ptr = &*data.begin();
+
+    *px = *(chunk_pos_t*)ptr;
+    ptr += sizeof chunk_pos_t;
+
+    *py = *(chunk_pos_t*)ptr;
+    ptr += sizeof chunk_pos_t;
+
+    for (texel_local_pos_t i = 0; i < sx * sy; i++) {
+        texels[i] = *ptr;
+
+        ptr += sizeof fun::rgb_t;
+    }
+
+    return texels;
 }
