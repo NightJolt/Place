@@ -4,7 +4,7 @@ project(${PROJECT_NAME} CXX)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
 
-include_directories(header)
+include_directories(include)
 include_directories(source)
 
 file (
@@ -12,7 +12,7 @@ file (
 
     main.cpp
 
-    header/*.h
+    include/*.h
     source/*.cpp
 )
 

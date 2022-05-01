@@ -11,64 +11,10 @@
 
 #include "../common/include/chunk.h"
 
-namespace std {
-    template <>
-    struct hash<fun::vec2i_t> {
-        size_t operator()(const fun::vec2i_t& v) const {
-            return (v.x + v.y) * (v.x + v.y + 1) >> 1 + v.x;
-        }
-    };
-}
+#include "include/chunk.h"
+#include "include/canvas.h"
 
-template <uint8_t X, uint8_t Y>
-class chunk_t {
-public:
-
-    chunk_t() { std::fill(*data, *data + X * Y, fun::rgb_t { 0, 0, 0 }); }
-
-    inline fun::rgb_t get_color(uint8_t x, uint8_t y) { return data[x][y]; }
-    inline void set_color(uint8_t x, uint8_t y, fun::rgb_t color) { data[x][y] = color; }
-
-    inline fun::rgb_t* get_data() { return *data; }
-
-private:
-
-    fun::rgb_t data[X][Y];
-};
-
-class canvas_t {
-public:
-
-    canvas_t() {}
-
-    chunk_t <space::chunk_size_x, space::chunk_size_y>* get_chunk(int32_t x, int32_t y) {
-        auto coord = fun::vec2i_t { (x < 0 ? (x * -1 - 1) : x), (y < 0 ? (y * -1 - 1) : y) };
-
-        if (!data.contains(coord)) {
-            data.emplace(coord, new chunk_t <space::chunk_size_x, space::chunk_size_y> ());
-        }
-        
-        return data[coord];
-    }
-
-    fun::rgb_t get_color(int32_t x, int32_t y) {
-        return get_chunk(x, y)->get_color(fun::math::mod(x, space::chunk_size_x), fun::math::mod(y, space::chunk_size_y));
-    }
-
-    void set_color(int32_t x, int32_t y, fun::rgb_t color) {
-        get_chunk(x, y)->set_color(fun::math::mod(x, space::chunk_size_x), fun::math::mod(y, space::chunk_size_y), color);
-    }
-
-private:
-
-    std::unordered_map <fun::vec2i_t, chunk_t <space::chunk_size_x, space::chunk_size_y>*,
-        decltype([](const fun::vec2i_t& v) -> size_t const { return std::hash <fun::vec2i_t> () (v); }),
-        decltype([](const fun::vec2i_t& a, const fun::vec2i_t& b) -> bool const { return a == b; })> data;
-};
-
-// s - set pixel color (x, y, r, g, b)
-// f - fetch chunk data (x, y)
-// b - set chunk subscribtion range
+#include "include/slave.h"
 
 int main () {
     fun::winmgr::init(fun::winmgr::window_data_t("Place Server"));
@@ -77,7 +23,7 @@ int main () {
     fun::server_t server;
     server.launch(8001);
 
-    canvas_t canvas;
+    space::canvas_t canvas;
     
     while (window->render.isOpen()) {
         fun::time::recalculate();
@@ -88,31 +34,8 @@ int main () {
 
         if (!packet_storage.empty()) {
             fun::packet_storage_t::packet_t packet = packet_storage.read();
-            fun::command_t command_parser = fun::command_t(packet.data);
-            const std::string& command = command_parser.get_command();
 
-            if (command == "f") {
-                space::chunk_pos_t x = std::stoi(command_parser.get_arg(0));
-                space::chunk_pos_t y = std::stoi(command_parser.get_arg(1));
-
-                server.send_all(space::chunk::encode(x, y, space::chunk_size_x, space::chunk_size_y, canvas.get_chunk(x, y)->get_data()), packet.sender);
-            } else if (command == "s") {
-                fun::vec2_t pos = {
-                    std::stoi(command_parser.get_arg(0)),
-                    std::stoi(command_parser.get_arg(1))
-                };
-
-                fun::rgb_t color = {
-                    (uint8_t)std::stoi(command_parser.get_arg(2)),
-                    (uint8_t)std::stoi(command_parser.get_arg(3)),
-                    (uint8_t)std::stoi(command_parser.get_arg(4))
-                };
-
-                canvas.set_color(pos.x, pos.y, color);
-
-                // todo: change this
-                server.send_all("s " + std::to_string(pos.x) + " " + std::to_string(pos.y) + " " + std::to_string(color.r) + " " + std::to_string(color.g) + " " + std::to_string(color.b));
-            }
+            space::slave::process(server, canvas, fun::command_t(packet.data), packet.sender);
         }
 
         fun::debugger::display();
