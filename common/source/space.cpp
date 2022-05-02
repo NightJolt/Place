@@ -1,20 +1,24 @@
-#include "chunk.h"
+#include "space.h"
 
-std::string space::chunk::encode(chunk_pos_t px, chunk_pos_t py, chunk_size_t sx, chunk_size_t sy, fun::rgb_t* data) {
-    size_t mem_size = sizeof chunk_pos_t * 2 + sx * sy * sizeof fun::rgb_t + 1;
+namespace {
+    inline constexpr uint32_t chunk_size_squared = space::chunk_size * space::chunk_size;
+}
+
+std::string space::chunk::encode(chunk_pos_t x, chunk_pos_t y, fun::rgb_t* data) {
+    static constexpr size_t mem_size = sizeof uint32_t * 2 + ::chunk_size_squared * sizeof fun::rgb_t + 1;
 
     std::string encoded_data;
     encoded_data.resize(mem_size);
 
     char* ptr = &*encoded_data.begin();
 
-    *(chunk_pos_t*)ptr = px;
+    *(chunk_pos_t*)ptr = x;
     ptr += sizeof chunk_pos_t;
 
-    *(chunk_pos_t*)ptr = py;
+    *(chunk_pos_t*)ptr = y;
     ptr += sizeof chunk_pos_t;
 
-    for (texel_local_pos_t i = 0; i < sx * sy; i++) {
+    for (uint32_t i = 0; i < chunk_size_squared; i++) {
         *(fun::rgb_t*)ptr = *(data + i);
 
         ptr += sizeof fun::rgb_t;
@@ -31,14 +35,14 @@ std::string space::chunk::encode(chunk_pos_t px, chunk_pos_t py, chunk_size_t sx
         // ptr += sizeof uint8_t;
     }
 
-    *(uint8_t*)ptr = '\n';
+    *(char*)ptr = '\n';
 
     return encoded_data;
 }
 
-std::vector <uint8_t> space::chunk::decode(std::string data, chunk_size_t sx, chunk_size_t sy, chunk_pos_t* px, chunk_pos_t* py) {
+std::vector <uint8_t> space::chunk::decode(std::string data, chunk_pos_t* px, chunk_pos_t* py) {
     std::vector <uint8_t> texels;
-    texels.resize(sx * sy);
+    texels.resize(::chunk_size_squared);
 
     char* ptr = &*data.begin();
 
@@ -48,7 +52,7 @@ std::vector <uint8_t> space::chunk::decode(std::string data, chunk_size_t sx, ch
     *py = *(chunk_pos_t*)ptr;
     ptr += sizeof chunk_pos_t;
 
-    for (texel_local_pos_t i = 0; i < sx * sy; i++) {
+    for (uint32_t i = 0; i < ::chunk_size_squared; i++) {
         texels[i] = *ptr;
 
         ptr += sizeof fun::rgb_t;

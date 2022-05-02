@@ -9,7 +9,7 @@
 #include "../FunEngine2D/core/include/tools/debugger.h"
 #include "../FunEngine2D/core/include/_math.h"
 
-#include "../common/include/chunk.h"
+#include "../common/include/space.h"
 
 #include "include/chunk.h"
 #include "include/canvas.h"

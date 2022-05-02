@@ -6,7 +6,7 @@
 #include "../FunEngine2D/core/include/networking/server.h"
 #include "../FunEngine2D/core/include/input.h"
 
-#include "../common/include/chunk.h"
+#include "../common/include/space.h"
 
 // t - teleport to coordinates
 // s - set pixel color

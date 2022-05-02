@@ -1,7 +1,8 @@
 #pragma once
 
 #include "../../FunEngine2D/core/include/vec2.h"
-#include "../../common/include/chunk.h"
+
+#include "../../common/include/space.h"
 
 namespace space {
     class chunk_t {
