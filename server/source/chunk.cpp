@@ -1,7 +1,7 @@
 #include "chunk.h"
 
 space::chunk_t::chunk_t() {
-    std::fill(*data, *data + chunk_size_x * chunk_size_y, fun::rgb_t { 0, 0, 0 });
+    std::fill(*data, *data + space::chunk_size * space::chunk_size, fun::rgb_t { 0, 0, 0 });
 }
 
 fun::rgb_t space::chunk_t::get_color(uint8_t x, uint8_t y) {

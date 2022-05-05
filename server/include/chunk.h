@@ -10,13 +10,13 @@ namespace space {
 
         chunk_t();
 
-        fun::rgb_t get_color(uint8_t, uint8_t);
-        void set_color(uint8_t, uint8_t, fun::rgb_t);
+        fun::rgb_t get_color(space::texel_pos_t, space::texel_pos_t);
+        void set_color(space::texel_pos_t, space::texel_pos_t, fun::rgb_t);
 
         fun::rgb_t* get_data();
 
     private:
 
-        fun::rgb_t data[chunk_size_x][chunk_size_y];
+        fun::rgb_t data[chunk_size][chunk_size];
     };
 }

@@ -11,18 +11,18 @@ namespace space {
     class canvas_t {
     public:
 
-        chunk_t* get_chunk(fun::vec2_t <space::chunk_pos_t>);
+        chunk_t* get_chunk(space::chunk_pos_t, space::chunk_pos_t);
 
-        fun::rgb_t get_color(fun::vec2_t <space::texel_global_pos_t>);
-        void set_color(fun::vec2_t <space::texel_global_pos_t>, fun::rgb_t);
+        fun::rgb_t get_color(space::grid_pos_t, space::grid_pos_t);
+        void set_color(space::grid_pos_t, space::grid_pos_t, fun::rgb_t);
 
     private:
 
         std::unordered_map <
-            fun::vec2i_t,
+            fun::vec2_t <space::chunk_pos_t>,
             chunk_t*,
-            decltype([](const fun::vec2i_t& v) -> size_t const { return std::hash <fun::vec2i_t> () (v); }),
-            decltype([](const fun::vec2i_t& a, const fun::vec2i_t& b) -> bool const { return a == b; })
+            decltype([](const fun::vec2_t <space::chunk_pos_t>& v) -> size_t const { return fun::hash(v); }),
+            decltype([](const fun::vec2_t <space::chunk_pos_t>& a, const fun::vec2_t <space::chunk_pos_t>& b) -> bool const { return a == b; })
         > data;
     };
 }

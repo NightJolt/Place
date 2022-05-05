@@ -24,8 +24,6 @@ namespace {
             space::chunk::encode(
                 pos.x,
                 pos.y,
-                space::chunk_size_x,
-                space::chunk_size_y,
                 canvas.get_chunk(pos.x, pos.y)->get_data()
             ), sender);
     }
@@ -60,6 +58,6 @@ void space::slave::process(fun::server_t& server, canvas_t& canvas, const fun::c
     }
 }
 
-uint32_t space::slave::get_texels_set() {
+uint32_t space::slave::get_texels_set_count() {
     return ::texels_set;
 }

@@ -38,6 +38,15 @@ int main () {
             space::slave::process(server, canvas, fun::command_t(packet.data), packet.sender);
         }
 
+        {
+            auto world = window->get_mouse_world_position();
+            auto grid = space::world_to_grid(world);
+            auto chunk = space::grid_to_chunk(grid);
+            auto texel = space::grid_to_texel(grid);
+
+            println(world << ' ' << grid << ' ' << chunk << ' ' << texel);
+        }
+
         fun::debugger::display();
 
         window->display(sf::Color::Black);

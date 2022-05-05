@@ -4,6 +4,27 @@ namespace {
     inline constexpr uint32_t chunk_size_squared = space::chunk_size * space::chunk_size;
 }
 
+fun::vec2_t <space::grid_pos_t> space::world_to_grid(fun::vec2f_t p) {
+    return fun::vec2_t <space::grid_pos_t> (p.x - (p.x < 0), p.y - (p.y < 0));
+}
+
+fun::vec2_t <space::chunk_pos_t> space::grid_to_chunk(fun::vec2_t <space::grid_pos_t> p) {
+    chunk_pos_t x = p.x + (p.x < 0);
+    chunk_pos_t y = p.y + (p.y < 0);
+    
+    x /= space::chunk_size;
+    y /= space::chunk_size;
+
+    x -= p.x < 0;
+    y -= p.y < 0;
+
+    return fun::vec2_t <space::chunk_pos_t> (x, y);
+}
+
+fun::vec2_t <space::texel_pos_t> space::grid_to_texel(fun::vec2_t <grid_pos_t> p) {
+    return fun::vec2_t <space::texel_pos_t> (fun::math::mod(p.x, space::chunk_size), fun::math::mod(p.y, space::chunk_size));
+}
+
 std::string space::chunk::encode(chunk_pos_t x, chunk_pos_t y, fun::rgb_t* data) {
     static constexpr size_t mem_size = sizeof uint32_t * 2 + ::chunk_size_squared * sizeof fun::rgb_t + 1;
 
