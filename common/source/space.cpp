@@ -4,6 +4,14 @@ namespace {
     inline constexpr uint32_t chunk_size_squared = space::chunk_size * space::chunk_size;
 }
 
+fun::vec2_t <space::texel_pos_t> space::array_to_texel(uint16_t i) {
+    return fun::vec2_t <space::texel_pos_t> (i / chunk_size, i % chunk_size);
+}
+
+uint16_t space::texel_to_array(fun::vec2_t <space::texel_pos_t> p) {
+    return p.x * chunk_size + p.y;
+}
+
 fun::vec2_t <space::grid_pos_t> space::world_to_grid(fun::vec2f_t p) {
     return fun::vec2_t <space::grid_pos_t> (p.x - (p.x < 0), p.y - (p.y < 0));
 }
@@ -43,17 +51,6 @@ std::string space::chunk::encode(chunk_pos_t x, chunk_pos_t y, fun::rgb_t* data)
         *(fun::rgb_t*)ptr = *(data + i);
 
         ptr += sizeof fun::rgb_t;
-
-        // fun::rgb_t color = *(data + i);
-
-        // *(uint8_t*)ptr = color.r;
-        // ptr += sizeof uint8_t;
-
-        // *(uint8_t*)ptr = color.g;
-        // ptr += sizeof uint8_t;
-
-        // *(uint8_t*)ptr = color.b;
-        // ptr += sizeof uint8_t;
     }
 
     *(char*)ptr = '\n';

@@ -13,6 +13,9 @@ namespace space {
 
     inline constexpr chunk_size_t chunk_size = 16;
 
+    fun::vec2_t <texel_pos_t> array_to_texel(uint16_t);
+    uint16_t texel_to_array(fun::vec2_t <texel_pos_t>);
+
     fun::vec2_t <grid_pos_t> world_to_grid(fun::vec2f_t);
     fun::vec2_t <chunk_pos_t> grid_to_chunk(fun::vec2_t <grid_pos_t>);
     fun::vec2_t <texel_pos_t> grid_to_texel(fun::vec2_t <grid_pos_t>);
