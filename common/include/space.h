@@ -18,10 +18,11 @@ namespace space {
 
     fun::vec2_t <grid_pos_t> world_to_grid(fun::vec2f_t);
     fun::vec2_t <chunk_pos_t> grid_to_chunk(fun::vec2_t <grid_pos_t>);
+    fun::vec2_t <grid_pos_t> chunk_to_grid(fun::vec2_t <chunk_pos_t>);
     fun::vec2_t <texel_pos_t> grid_to_texel(fun::vec2_t <grid_pos_t>);
 
     namespace chunk {
         std::string encode(chunk_pos_t, chunk_pos_t, fun::rgb_t*);
-        std::vector <uint8_t> decode(std::string, chunk_pos_t*, chunk_pos_t*);
+        std::vector <fun::rgb_t> decode(std::string, chunk_pos_t*, chunk_pos_t*);
     }
 } 

@@ -8,12 +8,6 @@
 
 #include "../common/include/space.h"
 
-// t - teleport to coordinates
-// s - set pixel color
-// g - get pixel color
-// z - zoom
-// e - export
-
 int main () {
     fun::winmgr::init(fun::winmgr::window_data_t("Place Client"));
     auto* window = fun::winmgr::main_window;

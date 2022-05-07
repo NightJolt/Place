@@ -29,7 +29,7 @@ namespace {
     }
 }
 
-// s - set pixel color (x, y, r, g, b)
+// s - set texel color (x, y, r, g, b)
 // f - fetch chunk data (x, y)
 // b - set chunk subscribtion range
 

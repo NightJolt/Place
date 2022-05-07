@@ -29,6 +29,10 @@ fun::vec2_t <space::chunk_pos_t> space::grid_to_chunk(fun::vec2_t <space::grid_p
     return fun::vec2_t <space::chunk_pos_t> (x, y);
 }
 
+fun::vec2_t <space::grid_pos_t> space::chunk_to_grid(fun::vec2_t <space::chunk_pos_t> p) {
+    return p * (space::chunk_pos_t)chunk_size;
+}
+
 fun::vec2_t <space::texel_pos_t> space::grid_to_texel(fun::vec2_t <grid_pos_t> p) {
     return fun::vec2_t <space::texel_pos_t> (fun::math::mod(p.x, space::chunk_size), fun::math::mod(p.y, space::chunk_size));
 }
@@ -58,8 +62,8 @@ std::string space::chunk::encode(chunk_pos_t x, chunk_pos_t y, fun::rgb_t* data)
     return encoded_data;
 }
 
-std::vector <uint8_t> space::chunk::decode(std::string data, chunk_pos_t* px, chunk_pos_t* py) {
-    std::vector <uint8_t> texels;
+std::vector <fun::rgb_t> space::chunk::decode(std::string data, chunk_pos_t* px, chunk_pos_t* py) {
+    std::vector <fun::rgb_t> texels;
     texels.resize(::chunk_size_squared);
 
     char* ptr = &*data.begin();
@@ -71,7 +75,7 @@ std::vector <uint8_t> space::chunk::decode(std::string data, chunk_pos_t* px, ch
     ptr += sizeof chunk_pos_t;
 
     for (uint32_t i = 0; i < ::chunk_size_squared; i++) {
-        texels[i] = *ptr;
+        texels[i] = *(fun::rgb_t*)ptr;
 
         ptr += sizeof fun::rgb_t;
     }
