@@ -8,44 +8,40 @@
 
 #include "../common/include/space.h"
 
+#include "include/slave.h"
+#include "include/canvas.h"
+
 int main () {
     fun::winmgr::init(fun::winmgr::window_data_t("Place Client"));
     auto* window = fun::winmgr::main_window;
 
+    // {
+    //     println((fun::vec2f_t)space::chunk_to_grid({ 3, -2 }));
+
+    //     exit(0);
+    // }
+
     fun::client_t client;
     if (!client.connect("localhost", 8001)) exit(69);
+
+    space::canvas_t canvas;
     
     while (window->render.isOpen()) {
         fun::time::recalculate();
         fun::winmgr::update();
         fun::input::listen();
 
-        if (fun::input::pressed(sf::Keyboard::Space)) client.send("s 1 2 255 150 0");
+        if (fun::input::pressed(sf::Mouse::Left)) space::slave::send_texel(client, canvas, space::world_to_grid(window->get_mouse_world_position()), { 255, 150, 0});
 
         client.receive();
         
         auto& packet_storage = client.get_packets();
 
         if (!packet_storage.empty()) {
-            fun::packet_storage_t::packet_t packet = packet_storage.read();
-            fun::command_t command_parser = fun::command_t(packet.data);
-            const std::string& command = command_parser.get_command();
-
-            if (command == "s") {
-                fun::vec2_t pos = {
-                    std::stoi(command_parser.get_arg(0)),
-                    std::stoi(command_parser.get_arg(1))
-                };
-
-                fun::rgb_t color = {
-                    (uint8_t)std::stoi(command_parser.get_arg(2)),
-                    (uint8_t)std::stoi(command_parser.get_arg(3)),
-                    (uint8_t)std::stoi(command_parser.get_arg(4))
-                };
-                
-                // ! smth here
-            }
+            space::slave::process(client, canvas, fun::command_t(packet_storage.read().data));
         }
+
+        window->draw_world(canvas, 0);
 
         window->display(sf::Color::Black);
     }

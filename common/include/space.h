@@ -6,12 +6,11 @@
 #include "../../FunEngine2D/core/include/_math.h"
 
 namespace space {
-    typedef int16_t chunk_pos_t;
-    typedef uint8_t chunk_size_t;
-    typedef uint8_t texel_pos_t;
     typedef int32_t grid_pos_t;
+    typedef int16_t chunk_pos_t;
+    typedef uint8_t texel_pos_t;
 
-    inline constexpr chunk_size_t chunk_size = 16;
+    inline constexpr texel_pos_t chunk_size = 16;
 
     fun::vec2_t <texel_pos_t> array_to_texel(uint16_t);
     uint16_t texel_to_array(fun::vec2_t <texel_pos_t>);

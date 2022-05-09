@@ -1,19 +1,23 @@
 #include "canvas.h"
 
-space::chunk_t* space::canvas_t::get_chunk(space::chunk_pos_t x, space::chunk_pos_t y) {
-    fun::vec2_t <space::chunk_pos_t> coord = { x, y };
-
-    if (!data.contains(coord)) {
-        data.emplace(coord, new chunk_t(x, y));
+space::chunk_t* space::canvas_t::get_chunk(fun::vec2_t <space::chunk_pos_t> p) {
+    if (!chunks.contains(p)) {
+        chunks.emplace(p, new chunk_t(p));
     }
     
-    return data[coord];
+    return chunks[p];
 }
 
-fun::rgb_t space::canvas_t::get_color(space::grid_pos_t x, space::grid_pos_t y) {
-    return get_chunk(x, y)->get_color(fun::math::mod(x, space::chunk_size), fun::math::mod(y, space::chunk_size));
+fun::rgb_t space::canvas_t::get_color(fun::vec2_t <space::grid_pos_t> p) {
+    return get_chunk(space::grid_to_chunk(p))->get_color(space::grid_to_texel(p));
 }
 
-void space::canvas_t::set_color(space::grid_pos_t x, space::grid_pos_t y, fun::rgb_t color) {
-    get_chunk(x, y)->set_color(fun::math::mod(x, space::chunk_size), fun::math::mod(y, space::chunk_size), color);
+void space::canvas_t::set_color(fun::vec2_t <space::grid_pos_t> p, fun::rgb_t color) {
+    get_chunk(space::grid_to_chunk(p))->set_color(space::grid_to_texel(p), color);
+}
+
+void space::canvas_t::draw(sf::RenderTarget& target, sf::RenderStates states) const {
+    for (auto& [_, chunk] : chunks) {
+        target.draw(&chunk->get_vertices()[0], chunk->get_vertices().size(), sf::Quads, states);
+    }
 }
