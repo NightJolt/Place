@@ -8,6 +8,7 @@
 #include "../FunEngine2D/core/include/tools/command.h"
 #include "../FunEngine2D/core/include/tools/debugger.h"
 #include "../FunEngine2D/core/include/_math.h"
+#include "../FunEngine2D/core/include/pointer.h"
 
 #include "../common/include/space.h"
 
@@ -19,6 +20,9 @@
 int main () {
     fun::winmgr::init(fun::winmgr::window_data_t("Place Server"));
     auto* window = fun::winmgr::main_window;
+
+    window->set_vsync(false);
+    window->target_framerate(60);
 
     fun::server_t server;
     server.launch(8001);
