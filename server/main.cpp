@@ -28,6 +28,9 @@ int main () {
     server.launch(8001);
 
     space::canvas_t canvas;
+
+    const uint32_t max_requests_per_frame = 100;
+    uint32_t current_requests_left;
     
     while (window->render.isOpen()) {
         fun::time::recalculate();
@@ -36,7 +39,9 @@ int main () {
         server.listen();
         auto& packet_storage = server.get_packets();
 
-        if (!packet_storage.empty()) {
+        current_requests_left = max_requests_per_frame;
+
+        while (current_requests_left-- && !packet_storage.empty()) {
             fun::packet_storage_t::packet_t packet = packet_storage.read();
 
             space::slave::process(server, canvas, fun::command_t(packet.data), packet.sender);

@@ -16,7 +16,7 @@ int main () {
     auto* window = fun::winmgr::main_window;
 
     window->set_vsync(false);
-    window->target_framerate(60);
+    // ! window->target_framerate(60);
 
     // {
     //     println((fun::vec2f_t)space::chunk_to_grid({ 3, -2 }));
@@ -25,7 +25,7 @@ int main () {
     // }
 
     fun::client_t client;
-    if (!client.connect("localhost", 8001)) exit(69);
+    assert(client.connect("localhost", 8001));
 
     space::canvas_t canvas;
     
@@ -36,8 +36,7 @@ int main () {
 
         window->world_view.move((fun::input::keyboard_2d() * fun::vec2f_t(1, -1) * window->zoom * 200.f * fun::time::delta_time()).to_sf());
 
-        if (fun::input::pressed(sf::Mouse::Left)) canvas.set_color(space::world_to_grid(window->get_mouse_world_position()), { 255, 150, 0 });
-        // space::slave::send_texel(client, canvas, space::world_to_grid(window->get_mouse_world_position()), { 255, 150, 0 });
+        if (fun::input::hold(sf::Mouse::Left)) space::slave::send_texel(client, canvas, space::world_to_grid(window->get_mouse_world_position()), { 255, 150, 0 });
 
         client.receive();
         

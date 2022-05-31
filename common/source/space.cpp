@@ -9,7 +9,7 @@ fun::vec2_t <space::texel_pos_t> space::array_to_texel(uint16_t i) {
 }
 
 uint16_t space::texel_to_array(fun::vec2_t <space::texel_pos_t> p) {
-    return p.x * chunk_size + p.y;
+    return (p.x * chunk_size + p.y) * 4;
 }
 
 fun::vec2_t <space::grid_pos_t> space::world_to_grid(fun::vec2f_t p) {

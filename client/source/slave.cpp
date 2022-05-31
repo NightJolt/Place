@@ -7,6 +7,10 @@
 // e - export
 
 void space::slave::send_texel(fun::client_t& client, canvas_t& canvas, fun::vec2_t <grid_pos_t> pos, fun::rgb_t color) {
+    if (canvas.get_color(pos) == color) return;
+
+    canvas.set_color(pos, color);
+
     fun::command_t command;
 
     command.set_command("s");
