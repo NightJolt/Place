@@ -21,3 +21,7 @@ void space::canvas_t::draw(sf::RenderTarget& target, sf::RenderStates states) co
         target.draw(&chunk->get_vertices()[0], chunk->get_vertices().size(), sf::Quads, states);
     }
 }
+
+void space::canvas_t::clear() {
+    chunks.clear();
+}

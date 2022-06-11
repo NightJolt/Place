@@ -16,6 +16,8 @@ namespace space {
         fun::rgb_t get_color(fun::vec2_t <space::grid_pos_t>);
         void set_color(fun::vec2_t <space::grid_pos_t>, fun::rgb_t);
 
+        void clear();
+
     private:
 
         void draw(sf::RenderTarget&, sf::RenderStates) const override;
