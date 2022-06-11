@@ -3,8 +3,8 @@
 #include "../../FunEngine2D/core/include/globals.h"
 #include "../../FunEngine2D/core/include/color.h"
 
-namespace space::interf {
-    void draw();
+#include "state.h"
 
-    fun::rgb_t get_selected_color();
+namespace space::interf {
+    void draw(state_t&);
 }

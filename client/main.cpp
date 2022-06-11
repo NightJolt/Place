@@ -8,10 +8,10 @@
 
 #include "../common/include/space.h"
 
-#include "include/slave.h"
-#include "include/canvas.h"
-
-#include "include/interface.h"
+#include "slave.h"
+#include "canvas.h"
+#include "interface.h"
+#include "state.h"
 
 int main () {
     fun::winmgr::init(fun::winmgr::window_data_t("Place Client"));
@@ -26,10 +26,9 @@ int main () {
     //     exit(0);
     // }
 
-    fun::client_t client;
-    assert(client.connect("localhost", 8001));
+    space::state_t state;
 
-    space::canvas_t canvas;
+    state.brush.color = fun::rgb_t::white;
     
     while (window->render.isOpen()) {
         fun::time::recalculate();
@@ -38,24 +37,24 @@ int main () {
 
         window->world_view.move((fun::input::keyboard_2d() * fun::vec2f_t(1, -1) * window->zoom * 200.f * fun::time::delta_time()).to_sf());
 
-        if (fun::input::hold(sf::Mouse::Left)) space::slave::send_texel(client, canvas, space::world_to_grid(window->get_mouse_world_position()), space::interf::get_selected_color());
+        if (fun::input::hold(sf::Mouse::Left)) space::slave::send_texel(state.client, state.canvas, space::world_to_grid(window->get_mouse_world_position()), state.brush.color);
 
-        client.receive();
+        state.client.receive();
         
-        auto& packet_storage = client.get_packets();
+        auto& packet_storage = state.client.get_packets();
 
         if (!packet_storage.empty()) {
-            space::slave::process(client, canvas, fun::command_t(packet_storage.read().data));
+            space::slave::process(state.client, state.canvas, fun::command_t(packet_storage.read().data));
         }
 
-        space::interf::draw();
+        space::interf::draw(state);
 
-        window->draw_world(canvas, 0);
+        window->draw_world(state.canvas, 0);
 
         window->display(sf::Color::Black);
     }
 
-    client.disconnect();
+    state.client.disconnect();
 
     fun::winmgr::close();
 

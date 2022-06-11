@@ -1,7 +1,9 @@
 #pragma once
 
+#include "../../FunEngine2D/core/include/globals.h"
 #include "../../FunEngine2D/core/include/tools/command.h"
 #include "../../FunEngine2D/core/include/networking/server.h"
+
 #include "canvas.h"
 
 namespace space::slave {
