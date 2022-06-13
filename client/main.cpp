@@ -18,17 +18,10 @@ int main () {
     auto* window = fun::winmgr::main_window;
 
     window->set_vsync(false);
-    // ! window->target_framerate(60);
-
-    // {
-    //     println((fun::vec2f_t)space::chunk_to_grid({ 3, -2 }));
-
-    //     exit(0);
-    // }
 
     space::state_t state;
-
-    state.brush.color = fun::rgb_t::white;
+    state.tool.mode = space::tool_mode_t::brush;
+    state.tool.color = fun::rgb_t::white;
     
     while (window->render.isOpen()) {
         fun::time::recalculate();
@@ -37,7 +30,26 @@ int main () {
 
         window->world_view.move((fun::input::keyboard_2d() * fun::vec2f_t(1, -1) * window->zoom * 200.f * fun::time::delta_time()).to_sf());
 
-        if (fun::input::hold(sf::Mouse::Left)) space::slave::send_texel(state.client, state.canvas, space::world_to_grid(window->get_mouse_world_position()), state.brush.color);
+        if (fun::input::pressed(sf::Keyboard::B)) state.tool.mode = space::tool_mode_t::brush;
+        if (fun::input::pressed(sf::Keyboard::I)) state.tool.mode = space::tool_mode_t::eyedrop;
+        if (fun::input::pressed(sf::Keyboard::E)) state.tool.color = fun::rgb_t::black, state.tool.mode = space::tool_mode_t::brush;
+
+        if (fun::input::hold(sf::Mouse::Left)) {
+            switch(state.tool.mode) {
+            case space::tool_mode_t::brush:
+
+                space::slave::send_texel(state.client, state.canvas, space::world_to_grid(window->get_mouse_world_position()), state.tool.color);
+
+                break;
+
+            case space::tool_mode_t::eyedrop:
+
+                state.tool.color = state.canvas.get_color(space::world_to_grid(window->get_mouse_world_position()));
+                state.tool.mode = space::tool_mode_t::brush;
+
+                break;
+            }
+        }
 
         state.client.receive();
         

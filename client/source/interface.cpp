@@ -1,13 +1,21 @@
 #include "interface.h"
 
 namespace {
-    bool color_picker_window_enabled = false;
-    float selected_color[3] = { 1.f, 1.f, 1.f };
-    void draw_color_picker(space::state_t& state) {
-        ImGui::Begin("Color Picker", &color_picker_window_enabled);
+    bool  brush_window_enabled = false;
+    std::array <float, 3> selected_color = { 1.f, 1.f, 1.f };
+    void draw_brush_window(space::state_t& state) {
+        selected_color = state.tool.color.to_float();
 
-            if (ImGui::ColorEdit3("color picker tool", (float*)&selected_color)) {
-                state.brush.color = { (uint8_t)(::selected_color[0] * 255), (uint8_t)(::selected_color[1] * 255), (uint8_t)(::selected_color[2] * 255) };
+        ImGui::Begin("Brush", &brush_window_enabled);
+
+            if (ImGui::ColorEdit3("color picker", (float*)&selected_color)) {
+                state.tool.color = fun::rgb_t::from_float(::selected_color[0], ::selected_color[1], ::selected_color[2]);
+            }
+
+            ImGui::NewLine();
+
+            if (ImGui::Button("Eyedrop")) {
+                state.tool.mode = space::tool_mode_t::eyedrop;
             }
 
         ImGui::End();
@@ -16,7 +24,7 @@ namespace {
     bool connect_to_server_window_enabled = false;
     char ip_input[32];
     char port_input[8];
-    void draw_connect_to_server(space::state_t& state) {
+    void draw_connect_to_server_window(space::state_t& state) {
         ImGui::Begin("Connect", &connect_to_server_window_enabled);
 
             ImGui::InputText(" Ip Address", ip_input, sizeof ip_input);
@@ -51,8 +59,8 @@ namespace {
             }
 
             if (ImGui::BeginMenu("Window")) {
-                if (ImGui::MenuItem("Color Picker")) {
-                    color_picker_window_enabled = true;
+                if (ImGui::MenuItem("Brush")) {
+                    brush_window_enabled = true;
                 }
 
                 ImGui::EndMenu();
@@ -66,6 +74,6 @@ namespace {
 void space::interf::draw(state_t& state) {
     ::draw_nav_bar(state);
 
-    if (::color_picker_window_enabled) ::draw_color_picker(state);
-    if (::connect_to_server_window_enabled) ::draw_connect_to_server(state);
+    if (::brush_window_enabled) ::draw_brush_window(state);
+    if (::connect_to_server_window_enabled) ::draw_connect_to_server_window(state);
 }

@@ -6,14 +6,19 @@
 #include "canvas.h"
 
 namespace space {
-    struct brush_t {
+    enum tool_mode_t {
+        brush,
+        eyedrop
+    };
+
+    struct tool_t {
+        tool_mode_t mode;
         fun::rgb_t color;
     };
 
     struct state_t {
         fun::client_t client;
-
         canvas_t canvas;
-        brush_t brush;
+        tool_t tool;
     };
 }
