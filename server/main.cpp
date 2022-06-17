@@ -8,7 +8,6 @@
 #include "../FunEngine2D/core/include/tools/command.h"
 #include "../FunEngine2D/core/include/tools/debugger.h"
 #include "../FunEngine2D/core/include/_math.h"
-#include "../FunEngine2D/core/include/pointer.h"
 
 #include "../common/include/space.h"
 

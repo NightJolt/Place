@@ -45,7 +45,7 @@ namespace {
     void draw_nav_bar(space::state_t& state) {
         if (ImGui::BeginMainMenuBar()) {
             if (ImGui::BeginMenu("World")) {
-                if (ImGui::MenuItem("Connect")) {
+                if (!state.client.check_connection() && ImGui::MenuItem("Connect")) {
                     connect_to_server_window_enabled = true;
                 }
                 

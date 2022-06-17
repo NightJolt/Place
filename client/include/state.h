@@ -8,7 +8,8 @@
 namespace space {
     enum tool_mode_t {
         brush,
-        eyedrop
+        eyedrop,
+        select
     };
 
     struct tool_t {
