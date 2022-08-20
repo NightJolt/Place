@@ -4,10 +4,11 @@
 #include "../../FunEngine2D/core/include/tools/command.h"
 #include "../../FunEngine2D/core/include/networking/server.h"
 
-#include "canvas.h"
+#include "state.h"
+// todo
+// process to process_command
+// server and canvas to state
 
 namespace space::slave {
-    void process(fun::server_t&, canvas_t&, const fun::command_t&, sf::TcpSocket*);
-
-    uint32_t get_texels_set_count();
+    void process(state_t&, const fun::command_t&, sf::TcpSocket*);
 }

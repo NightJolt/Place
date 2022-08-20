@@ -13,7 +13,7 @@
 
 #include "include/chunk.h"
 #include "include/canvas.h"
-
+#include "include/state.h"
 #include "include/slave.h"
 
 int main () {
@@ -22,28 +22,26 @@ int main () {
 
     window->set_vsync(false);
     window->target_framerate(60);
+    
+    space::state_t state;
+    state.server.launch(8001);
 
-    fun::server_t server;
-    server.launch(8001);
-
-    space::canvas_t canvas;
-
-    const uint32_t max_requests_per_frame = 100;
+    const uint32_t max_requests_per_frame = 1000;
     uint32_t current_requests_left;
     
     while (window->render.isOpen()) {
         fun::time::recalculate();
         fun::winmgr::update();
 
-        server.listen();
-        auto& packet_storage = server.get_packets();
+        state.server.listen();
+        auto& packet_storage = state.server.get_packets();
 
         current_requests_left = max_requests_per_frame;
 
         while (current_requests_left-- && !packet_storage.empty()) {
             fun::packet_storage_t::packet_t packet = packet_storage.read();
 
-            space::slave::process(server, canvas, fun::command_t(packet.data), packet.sender);
+            space::slave::process(state, fun::command_t(packet.data), packet.sender);
         }
         
         fun::debugger::display();
@@ -51,7 +49,7 @@ int main () {
         window->display(sf::Color::Black);
     }
 
-    server.terminate();
+    state.server.terminate();
 
     fun::winmgr::close();
 

@@ -1,8 +1,6 @@
 #include "slave.h"
 
 namespace {
-    uint32_t texels_set = 0;
-
     // bool set_texel(space::canvas_t& canvas) {
     //     return true;
     // }
@@ -31,8 +29,9 @@ namespace {
 // s - set texel color (x, y, r, g, b)
 // f - fetch chunk data (x, y)
 // b - set chunk subscribtion range
+// cn - set clientname
 
-void space::slave::process(fun::server_t& server, canvas_t& canvas, const fun::command_t& command_parser, sf::TcpSocket* sender) {
+void space::slave::process(state_t& state, const fun::command_t& command_parser, sf::TcpSocket* sender) {
     const std::string& command = command_parser.get_command();
 
     // println(command_parser.build());
@@ -51,15 +50,13 @@ void space::slave::process(fun::server_t& server, canvas_t& canvas, const fun::c
             (uint8_t)std::stoi(command_parser.get_arg(4))
         };
 
-        canvas.set_color({ pos.x, pos.y }, color);
+        state.canvas.set_color({ pos.x, pos.y }, color);
 
-        ::texels_set++;
+        state.statistics.texels_placed++;
 
         // ::send_texel(server, pos, color);
-        server.send_all(command_parser.build());
+        state.server.send_all(command_parser.build());
+    } else if (command == "cn") {
+        state.client_datas[sender].name = command_parser.get_arg(0);
     }
-}
-
-uint32_t space::slave::get_texels_set_count() {
-    return ::texels_set;
 }

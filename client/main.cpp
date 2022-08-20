@@ -38,7 +38,7 @@ int main () {
             switch(state.tool.mode) {
             case space::tool_mode_t::brush:
 
-                space::slave::send_texel(state.client, state.canvas, space::world_to_grid(window->get_mouse_world_position()), state.tool.color);
+                space::slave::send_texel(state, space::world_to_grid(window->get_mouse_world_position()), state.tool.color);
 
                 break;
 
@@ -56,7 +56,7 @@ int main () {
         auto& packet_storage = state.client.get_packets();
 
         if (!packet_storage.empty()) {
-            space::slave::process(state.client, state.canvas, fun::command_t(packet_storage.read().data));
+            space::slave::process_command(state, packet_storage.read().data);
         }
 
         space::interf::draw(state);
