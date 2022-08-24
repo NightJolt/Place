@@ -6,22 +6,38 @@
 #include "../../FunEngine2D/core/include/_math.h"
 
 namespace space {
-    typedef int32_t grid_pos_t;
-    typedef int16_t chunk_pos_t;
-    typedef uint8_t texel_pos_t;
+    typedef int32_t grid_int_t;
+    typedef int32_t chunk_int_t;
+    typedef uint8_t texel_int_t;
 
-    inline constexpr texel_pos_t chunk_size = 16;
+    typedef fun::vec2_t <grid_int_t> grid_pos_t;
+    typedef fun::vec2_t <chunk_int_t> chunk_pos_t;
+    typedef fun::vec2_t <texel_int_t> texel_pos_t;
 
-    fun::vec2_t <texel_pos_t> array_to_texel(uint16_t);
-    uint16_t texel_to_array(fun::vec2_t <texel_pos_t>);
+    inline constexpr texel_int_t chunk_size = 16;
 
-    fun::vec2_t <grid_pos_t> world_to_grid(fun::vec2f_t);
-    fun::vec2_t <chunk_pos_t> grid_to_chunk(fun::vec2_t <grid_pos_t>);
-    fun::vec2_t <grid_pos_t> chunk_to_grid(fun::vec2_t <chunk_pos_t>);
-    fun::vec2_t <texel_pos_t> grid_to_texel(fun::vec2_t <grid_pos_t>);
+    texel_pos_t array_to_texel(int32_t);
+    int32_t texel_to_array(texel_pos_t);
+
+    grid_pos_t world_to_grid(fun::vec2f_t);
+    chunk_pos_t grid_to_chunk(grid_pos_t);
+    grid_pos_t chunk_to_grid(chunk_pos_t);
+    texel_pos_t grid_to_texel(grid_pos_t);
 
     namespace chunk {
-        std::string encode(chunk_pos_t, chunk_pos_t, fun::rgb_t*);
-        std::vector <fun::rgb_t> decode(std::string, chunk_pos_t*, chunk_pos_t*);
+        std::string encode(chunk_int_t, chunk_int_t, fun::rgb_t*);
+        std::vector <fun::rgb_t> decode(std::string, chunk_int_t*, chunk_int_t*);
     }
+
+    enum server_cmd_t {
+        set_pixel,
+        get_pixel,
+
+        send_chunk,
+        get_chunk,
+
+        send_batch,
+
+        count
+    };
 } 

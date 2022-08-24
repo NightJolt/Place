@@ -10,5 +10,5 @@
 // server and canvas to state
 
 namespace space::slave {
-    void process(state_t&, const fun::command_t&, sf::TcpSocket*);
+    void run(uint32_t, state_t*);
 }

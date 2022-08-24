@@ -16,7 +16,7 @@ void space::slave::set_clientname(state_t& state, const std::string& clientname)
     state.client.send(command.build());
 }
 
-void space::slave::send_texel(state_t& state, fun::vec2_t <grid_pos_t> pos, fun::rgb_t color) {
+void space::slave::send_texel(state_t& state, fun::vec2_t <grid_int_t> pos, fun::rgb_t color) {
     if (state.canvas.get_color(pos) == color) return;
 
     state.canvas.set_color(pos, color);

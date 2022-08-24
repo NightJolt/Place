@@ -26,23 +26,13 @@ int main () {
     space::state_t state;
     state.server.launch(8001);
 
-    const uint32_t max_requests_per_frame = 1000;
-    uint32_t current_requests_left;
+    space::slave::run(1, &state);
     
     while (window->render.isOpen()) {
         fun::time::recalculate();
         fun::winmgr::update();
 
         state.server.listen();
-        auto& packet_storage = state.server.get_packets();
-
-        current_requests_left = max_requests_per_frame;
-
-        while (current_requests_left-- && !packet_storage.empty()) {
-            fun::packet_storage_t::packet_t packet = packet_storage.read();
-
-            space::slave::process(state, fun::command_t(packet.data), packet.sender);
-        }
         
         fun::debugger::display();
 

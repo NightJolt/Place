@@ -77,8 +77,8 @@ namespace {
     }
 
     bool connect_to_server_window_enabled = false;
-    char ip_input[32];
-    char port_input[8];
+    char ip_input[32] = "localhost";
+    char port_input[8] = "8001";
     void draw_connect_to_server_window(space::state_t& state) {
         ImGui::Begin("Connect", &connect_to_server_window_enabled);
 

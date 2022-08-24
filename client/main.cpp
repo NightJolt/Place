@@ -18,6 +18,7 @@ int main () {
     auto* window = fun::winmgr::main_window;
 
     window->set_vsync(false);
+    window->target_framerate(60);
 
     space::state_t state;
     state.tool.mode = space::tool_mode_t::brush;
@@ -38,7 +39,9 @@ int main () {
             switch(state.tool.mode) {
             case space::tool_mode_t::brush:
 
-                space::slave::send_texel(state, space::world_to_grid(window->get_mouse_world_position()), state.tool.color);
+                // space::slave::send_texel(state, space::world_to_grid(window->get_mouse_world_position()), state.tool.color);
+
+                state.batch.add_texel(space::world_to_grid(window->get_mouse_world_position()), state.tool.color);
 
                 break;
 
@@ -49,6 +52,13 @@ int main () {
 
                 break;
             }
+        }
+
+        state.batch_cooldown -= fun::time::delta_time();
+        if (state.batch_cooldown <= 0 || state.batch_max_texels <= state.batch.get_total_texels()) {
+            state.batch_cooldown = state.batch_send_interval;
+            state.client.send(state.batch.to_str());
+            state.batch.clear();
         }
 
         state.client.receive();
