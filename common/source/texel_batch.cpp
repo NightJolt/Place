@@ -1,20 +1,23 @@
 #include "texel_batch.h"
 
-void space::texel_batch::add_texel(grid_pos_t grid_pos, fun::rgb_t color) {
+space::texel_batch_t::texel_batch_t() : m_total_texels(0) {}
+
+void space::texel_batch_t::add_texel(grid_pos_t grid_pos, fun::rgb_t color) {
     add_texel(grid_to_chunk(grid_pos), grid_to_texel(grid_pos), color);
 }
 
-void space::texel_batch::add_texel(chunk_pos_t chunk_pos, texel_pos_t texel_pos, fun::rgb_t color) {
-    m_data[chunk_pos].emplace_back(texel_pos);
+void space::texel_batch_t::add_texel(chunk_pos_t chunk_pos, texel_pos_t texel_pos, fun::rgb_t color) {
+    m_data[chunk_pos].emplace_back(texel_pos, color);
 
     m_total_texels++;
 }
 
-fun::str_t space::texel_batch::to_str() {
+fun::str_t space::texel_batch_t::to_str() {
     fun::str_t cmd;
 
     // 1 + data.size() * sizeof chunk_pos_t + data.size() * sizeof uint16_t + total_texels * sizeof texel_t + 1
-    cmd.resize(m_data.size() * (sizeof chunk_pos_t + sizeof uint16_t) + m_total_texels * sizeof texel_t + 2);
+    size_t data_size = m_data.size() * (sizeof chunk_pos_t + sizeof uint16_t) + m_total_texels * sizeof texel_t + 2;
+    cmd.resize(data_size);
     char* buffer = &cmd[0];
 
     cmd[0] = server_cmd_t::send_batch;
@@ -40,11 +43,12 @@ fun::str_t space::texel_batch::to_str() {
     return cmd;
 }
 
-void space::texel_batch::from_str(const fun::str_t& cmd) {
+void space::texel_batch_t::from_str(const fun::str_t& cmd) {
     const char* buffer = &cmd[0];
-    uint32_t ind = 1;
+    
+    buffer += 1;
 
-    while (ind < cmd.size()) {
+    while (buffer < &*(cmd.end() - 1)) {
         chunk_pos_t chunk_pos = *(chunk_pos_t*)buffer;
         buffer += sizeof chunk_pos_t;
 
@@ -58,10 +62,16 @@ void space::texel_batch::from_str(const fun::str_t& cmd) {
     }
 }
 
-uint32_t space::texel_batch::get_total_texels() {
+uint32_t space::texel_batch_t::get_total_texels() {
     return m_total_texels;
 }
 
-void space::texel_batch::clear() {
+auto space::texel_batch_t::get_data() -> fun::unordered_map_vec2_t <chunk_int_t, std::vector <texel_t>>& {
+    return m_data;
+}
+
+void space::texel_batch_t::clear() {
     m_data.clear();
+
+    m_total_texels = 0;
 }

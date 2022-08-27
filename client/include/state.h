@@ -4,11 +4,12 @@
 #include "../../FunEngine2D/core/include/networking/client.h"
 
 #include "canvas.h"
-#include "texel_batch.h"
+#include "../../common/include/texel_batch.h"
 
 namespace space {
     enum tool_mode_t {
         brush,
+        erase,
         eyedrop,
         select
     };
@@ -26,7 +27,7 @@ namespace space {
         canvas_t canvas;
         tool_t tool;
 
-        texel_batch batch;
+        texel_batch_t batch;
         float batch_send_interval;
         float batch_cooldown;
         float batch_max_texels;

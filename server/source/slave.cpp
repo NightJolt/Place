@@ -2,6 +2,8 @@
 
 #include "../../FunEngine2D/core/include/tools/debugger.h"
 
+#include "../../common/include/texel_batch.h"
+
 // namespace {
     // bool set_texel(space::canvas_t& canvas) {
     //     return true;
@@ -38,32 +40,50 @@ namespace {
     space::state_t* state;
     fun::network::threadsafe_packet_storage_t* packet_storage;
 
-    void process(const std::string& cmd_str, sf::TcpSocket* sender) {
-        fun::command_t command_parser(cmd_str);
-        const std::string& command = command_parser.get_command();
+    // void process(const fun::str_t& cmd_str, sf::TcpSocket* sender) {
+    //     fun::command_t command_parser(cmd_str);
+    //     const fun::str_t& command = command_parser.get_command();
 
-        if (command == "f") {
-            // ::send_chunk(server, canvas, { (space::chunk_int_t)std::stoi(command_parser.get_arg(0)), (space::chunk_int_t)std::stoi(command_parser.get_arg(1)) }, sender);
-        } else if (command == "s") {
-            fun::vec2i_t pos = {
-                std::stoi(command_parser.get_arg(0)),
-                std::stoi(command_parser.get_arg(1))
-            };
+    //     if (command == "f") {
+    //         // ::send_chunk(server, canvas, { (space::chunk_int_t)std::stoi(command_parser.get_arg(0)), (space::chunk_int_t)std::stoi(command_parser.get_arg(1)) }, sender);
+    //     } else if (command == "s") {
+    //         fun::vec2i_t pos = {
+    //             std::stoi(command_parser.get_arg(0)),
+    //             std::stoi(command_parser.get_arg(1))
+    //         };
 
-            fun::rgb_t color = {
-                (uint8_t)std::stoi(command_parser.get_arg(2)),
-                (uint8_t)std::stoi(command_parser.get_arg(3)),
-                (uint8_t)std::stoi(command_parser.get_arg(4))
-            };
+    //         fun::rgb_t color = {
+    //             (uint8_t)std::stoi(command_parser.get_arg(2)),
+    //             (uint8_t)std::stoi(command_parser.get_arg(3)),
+    //             (uint8_t)std::stoi(command_parser.get_arg(4))
+    //         };
 
-            state->canvas.set_color({ pos.x, pos.y }, color);
+    //         state->canvas.set_color({ pos.x, pos.y }, color);
 
-            state->statistics.texels_placed++;
+    //         state->statistics.texels_placed++;
 
-            // ::send_texel(server, pos, color);
-            state->server.send_all(cmd_str, sender);
-        } else if (command == "cn") {
-            state->client_datas[sender].name = command_parser.get_arg(0);
+    //         // ::send_texel(server, pos, color);
+    //         state->server.send_all(cmd_str, sender);
+    //     } else if (command == "cn") {
+    //         state->client_datas[sender].name = command_parser.get_arg(0);
+    //     }
+    // }
+
+    void process(const fun::str_t& cmd_str, sf::TcpSocket* sender) {
+        space::server_cmd_t cmd_type = (space::server_cmd_t)cmd_str[0];
+
+        switch(cmd_type) {
+            case space::server_cmd_t::send_batch: {
+                space::texel_batch_t batch;
+
+                batch.from_str(cmd_str);
+
+                state->statistics.texels_placed += batch.get_total_texels();
+
+                fun::debugger::push_msg("received batch of " + std::to_string(batch.get_total_texels()) + " texels");
+
+                break;
+            }
         }
     }
 

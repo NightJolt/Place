@@ -29,6 +29,7 @@ namespace space {
         std::vector <fun::rgb_t> decode(std::string, chunk_int_t*, chunk_int_t*);
     }
 
+#pragma pack(push, 1)
     enum server_cmd_t {
         set_pixel,
         get_pixel,
@@ -40,4 +41,5 @@ namespace space {
 
         count
     };
+#pragma pack(pop)
 } 
