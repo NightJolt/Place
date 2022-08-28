@@ -37,10 +37,10 @@ namespace {
                         if (!input.empty()) {
                             memset(console_input, 0, sizeof *console_input);
 
-                            if (input[0] == '/')
-                                space::slave::send_message(state, input);
-                            else
-                                space::slave::process_command(state, input);
+                            // if (input[0] == '/')
+                            //     space::slave::send_message(state, input);
+                            // else
+                            //     space::slave::process_command(state, input);
                         }
 
                         reclaim_focus = true;

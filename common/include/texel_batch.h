@@ -13,6 +13,8 @@ namespace space {
             fun::rgb_t color;
         };
 
+        typedef fun::unordered_map_vec2_t <chunk_int_t, std::vector <texel_t>*> chunk_texel_map_t;
+
     public:
         texel_batch_t();
 
@@ -24,12 +26,12 @@ namespace space {
 
         uint32_t get_total_texels();
 
-        fun::unordered_map_vec2_t <chunk_int_t, std::vector <texel_t>>& get_data();
+        chunk_texel_map_t& get_data();
 
         void clear();
 
     private:
-        fun::unordered_map_vec2_t <chunk_int_t, std::vector <texel_t>> m_data;
+        chunk_texel_map_t m_data;
 
         uint32_t m_total_texels;
     };

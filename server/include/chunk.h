@@ -8,7 +8,6 @@
 namespace space {
     class chunk_t {
     public:
-
         chunk_t();
 
         fun::rgb_t get_color(fun::vec2_t <space::texel_int_t>);
@@ -16,8 +15,9 @@ namespace space {
 
         fun::rgb_t* get_data();
 
-    private:
+        std::mutex key;
 
+    private:
         fun::rgb_t data[chunk_size][chunk_size];
     };
 }

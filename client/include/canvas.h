@@ -11,10 +11,13 @@
 namespace space {
     class canvas_t : public sf::Drawable {
     public:
-        chunk_t* get_chunk(fun::vec2_t <space::chunk_int_t>);
+        chunk_t* get_chunk(chunk_pos_t);
 
-        fun::rgb_t get_color(fun::vec2_t <space::grid_int_t>);
-        void set_color(fun::vec2_t <space::grid_int_t>, fun::rgb_t);
+        fun::rgb_t get_color(grid_pos_t);
+        fun::rgb_t get_color(chunk_pos_t, texel_pos_t);
+
+        void set_color(grid_pos_t, fun::rgb_t);
+        void set_color(chunk_pos_t, texel_pos_t, fun::rgb_t);
 
         void clear();
 

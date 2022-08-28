@@ -1,7 +1,6 @@
 #include "slave.h"
 
 #include "../../FunEngine2D/core/include/tools/debugger.h"
-
 #include "../../common/include/texel_batch.h"
 
 // namespace {
@@ -75,12 +74,38 @@ namespace {
         switch(cmd_type) {
             case space::server_cmd_t::send_batch: {
                 space::texel_batch_t batch;
+                space::texel_batch_t new_batch;
 
                 batch.from_str(cmd_str);
 
                 state->statistics.texels_placed += batch.get_total_texels();
 
                 fun::debugger::push_msg("received batch of " + std::to_string(batch.get_total_texels()) + " texels");
+
+                auto& data = batch.get_data();
+
+                {
+                    std::unique_lock lock(state->canvas.key);
+
+                    for (auto& [chunk_pos, _] : data) {
+                        state->canvas.init_chunk(chunk_pos);
+                    }
+                }
+ 
+                {
+                    std::shared_lock lock(state->canvas.key);
+
+                    for (auto& [chunk_pos, texels] : data) {
+                        std::lock_guard lock(state->canvas.get_chunk(chunk_pos)->key);
+
+                        for (auto texel : *texels) {
+                            state->canvas.set_color(chunk_pos, texel.pos, texel.color);
+                            new_batch.add_texel(chunk_pos, texel.pos, state->canvas.get_color(chunk_pos, texel.pos));
+                        }
+                    }
+                }
+
+                state->server.send_all(new_batch.to_str());
 
                 break;
             }

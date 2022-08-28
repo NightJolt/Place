@@ -1,5 +1,7 @@
 #include "slave.h"
 
+#include "../../FunEngine2D/core/include/tools/debugger.h"
+
 // t - teleport to coordinates
 // s - set texel color
 // g - get texel color
@@ -16,23 +18,11 @@ void space::slave::set_clientname(state_t& state, const std::string& clientname)
     state.client.send(command.build());
 }
 
-void space::slave::send_texel(state_t& state, fun::vec2_t <grid_int_t> pos, fun::rgb_t color) {
+void space::slave::send_texel(state_t& state, grid_pos_t pos, fun::rgb_t color) {
     if (state.canvas.get_color(pos) == color) return;
-
-    state.canvas.set_color(pos, color);
-
-    fun::command_t command;
-
-    command.set_command("s");
-
-    command.add_arg(std::to_string(pos.x));
-    command.add_arg(std::to_string(pos.y));
     
-    command.add_arg(std::to_string(color.r));
-    command.add_arg(std::to_string(color.g));
-    command.add_arg(std::to_string(color.b));
-
-    state.client.send(command.build());
+    state.canvas.set_color(pos, state.tool.color);
+    state.batch.add_texel(pos, state.tool.color);
 }
 
 void space::slave::send_message(state_t& state, const std::string& msg) {
@@ -43,28 +33,55 @@ void space::slave::send_message(state_t& state, const std::string& msg) {
 
     state.client.send(command.build());
 }
+
+void space::slave::step(state_t& state, float delta_time) {
+    {
+        if (state.batch_cooldown > 0) state.batch_cooldown -= delta_time;
+        if (state.batch.get_total_texels() == 0) state.batch_cooldown = state.batch_send_interval;
+
+        if (state.batch_cooldown <= 0 || state.batch_max_texels <= state.batch.get_total_texels()) {
+            state.batch_cooldown = state.batch_send_interval;
+
+            fun::debugger::push_msg("sending batch: " + std::to_string(state.batch.get_total_texels()));
+
+            state.client.send(state.batch.to_str());
+            state.batch.clear();
+        }
+    }
+
+    {
+        state.client.receive();
     
-void space::slave::process_command(state_t& state, const std::string& cmd_str) {
-    const fun::command_t command_parser = fun::command_t(cmd_str);
+        auto& packet_storage = state.client.get_packets();
 
-    process_command(state, command_parser);
+        if (!packet_storage.empty()) {
+            fun::network::packet_t packet = packet_storage.read();
+
+            space::slave::process(state, packet);
+        }
+    }
 }
+    
+void space::slave::process(state_t& state, const fun::network::packet_t& packet) {
+    space::server_cmd_t cmd_type = (space::server_cmd_t)packet.data[0];
 
-void space::slave::process_command(state_t& state, const fun::command_t& command_parser) {
-    const std::string& command = command_parser.get_command();
+    switch(cmd_type) {
+        case space::server_cmd_t::send_batch: {
+            space::texel_batch_t batch;
 
-    if (command == "s") {
-        fun::vec2i_t pos = {
-            std::stoi(command_parser.get_arg(0)),
-            std::stoi(command_parser.get_arg(1))
-        };
+            batch.from_str(packet.data);
 
-        fun::rgb_t color = {
-            (uint8_t)std::stoi(command_parser.get_arg(2)),
-            (uint8_t)std::stoi(command_parser.get_arg(3)),
-            (uint8_t)std::stoi(command_parser.get_arg(4))
-        };
+            fun::debugger::push_msg("received batch of " + std::to_string(batch.get_total_texels()) + " texels");
 
-        state.canvas.set_color({ pos.x, pos.y }, color);
+            auto& data = batch.get_data();
+
+            for (auto& [chunk_pos, texels] : data) {
+                for (auto texel : *texels) {
+                    state.canvas.set_color(chunk_pos, texel.pos, texel.color);
+                }
+            }
+
+            break;
+        }
     }
 }

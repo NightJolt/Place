@@ -37,19 +37,18 @@ int main () {
 
         if (fun::input::pressed(sf::Keyboard::B)) state.tool.mode = space::tool_mode_t::brush;
         if (fun::input::pressed(sf::Keyboard::I)) state.tool.mode = space::tool_mode_t::eyedrop;
-        // if (fun::input::pressed(sf::Keyboard::E)) state.tool.mode = space::tool_mode_t::erase;s
+        if (fun::input::pressed(sf::Keyboard::E)) state.tool.mode = space::tool_mode_t::erase;
 
         if (fun::input::hold(sf::Mouse::Left)) {
             switch(state.tool.mode) {
                 case space::tool_mode_t::brush: {
-                    // space::slave::send_texel(state, space::world_to_grid(window->get_mouse_world_position()), state.tool.color);
-                    
-                    space::grid_pos_t grid_pos = space::world_to_grid(window->get_mouse_world_position());
+                    space::slave::send_texel(state, space::world_to_grid(window->get_mouse_world_position()), state.tool.color);
 
-                    if (state.canvas.get_color(grid_pos) != state.tool.color) {
-                        state.canvas.set_color(grid_pos, state.tool.color);
-                        state.batch.add_texel(grid_pos, state.tool.color);
-                    }
+                    break;
+                }
+                
+                case space::tool_mode_t::erase: {
+                    space::slave::send_texel(state, space::world_to_grid(window->get_mouse_world_position()), fun::rgb_t::black);
 
                     break;
                 }
@@ -62,23 +61,8 @@ int main () {
                 }
             }
         }
-
-        if (state.batch_cooldown > 0) state.batch_cooldown -= fun::time::delta_time();
-        if (state.batch.get_total_texels() == 0) state.batch_cooldown = state.batch_send_interval;
-        if (state.batch_cooldown <= 0 || state.batch_max_texels <= state.batch.get_total_texels()) {
-            state.batch_cooldown = state.batch_send_interval;
-            state.client.send(state.batch.to_str());
-            fun::debugger::push_msg("batch sent: " + std::to_string(state.batch.get_total_texels()));
-            state.batch.clear();
-        }
-
-        state.client.receive();
         
-        auto& packet_storage = state.client.get_packets();
-
-        if (!packet_storage.empty()) {
-            space::slave::process_command(state, packet_storage.read().data);
-        }
+        space::slave::step(state, fun::time::delta_time());
 
         space::interf::draw(state);
         

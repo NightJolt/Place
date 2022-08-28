@@ -8,9 +8,10 @@
 
 namespace space::slave {
     void set_clientname(state_t&, const std::string&);
-    void send_texel(state_t&, fun::vec2_t <grid_int_t>, fun::rgb_t);
+    void send_texel(state_t&, grid_pos_t, fun::rgb_t);
     void send_message(state_t&, const std::string&);
+
+    void step(state_t&, float);
     
-    void process_command(state_t&, const std::string&);
-    void process_command(state_t&, const fun::command_t&);
+    void process(state_t&, const fun::network::packet_t&);
 }

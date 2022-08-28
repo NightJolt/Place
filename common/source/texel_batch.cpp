@@ -7,7 +7,9 @@ void space::texel_batch_t::add_texel(grid_pos_t grid_pos, fun::rgb_t color) {
 }
 
 void space::texel_batch_t::add_texel(chunk_pos_t chunk_pos, texel_pos_t texel_pos, fun::rgb_t color) {
-    m_data[chunk_pos].emplace_back(texel_pos, color);
+    if (m_data.count(chunk_pos) == 0) m_data[chunk_pos] = new std::vector <texel_t> ();
+
+    m_data[chunk_pos]->emplace_back(texel_pos, color);
 
     m_total_texels++;
 }
@@ -28,10 +30,10 @@ fun::str_t space::texel_batch_t::to_str() {
         *(chunk_pos_t*)buffer = chunk_pos;
         buffer += sizeof chunk_pos_t;
 
-        *(uint16_t*)buffer = (uint16_t)texels.size();
+        *(uint16_t*)buffer = (uint16_t)texels->size();
         buffer += sizeof uint16_t;
 
-        for (auto texel : texels) {
+        for (auto texel : *texels) {
             *(texel_pos_t*)buffer = texel.pos;
             buffer += sizeof texel_pos_t;
             
@@ -66,7 +68,7 @@ uint32_t space::texel_batch_t::get_total_texels() {
     return m_total_texels;
 }
 
-auto space::texel_batch_t::get_data() -> fun::unordered_map_vec2_t <chunk_int_t, std::vector <texel_t>>& {
+space::texel_batch_t::chunk_texel_map_t& space::texel_batch_t::get_data() {
     return m_data;
 }
 
