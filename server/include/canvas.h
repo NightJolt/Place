@@ -10,6 +10,9 @@
 
 namespace space {
     class canvas_t {
+    private:
+        typedef fun::unordered_map_vec2_t <chunk_int_t, chunk_t*> chunk_map_t;
+
     public:
         void init_chunk(chunk_pos_t);
 
@@ -21,9 +24,11 @@ namespace space {
         void set_color(grid_pos_t, fun::rgb_t);
         void set_color(chunk_pos_t, texel_pos_t, fun::rgb_t);
 
+        chunk_map_t& get_chunks();
+
         std::shared_mutex key;
 
     private:
-        fun::unordered_map_vec2_t <chunk_int_t, chunk_t*> m_chunks;
+        chunk_map_t m_chunks;
     };
 }

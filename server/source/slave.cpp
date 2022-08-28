@@ -85,7 +85,7 @@ namespace {
                 auto& data = batch.get_data();
 
                 {
-                    std::unique_lock lock(state->canvas.key);
+                    std::unique_lock canvas_unique_lock(state->canvas.key);
 
                     for (auto& [chunk_pos, _] : data) {
                         state->canvas.init_chunk(chunk_pos);
@@ -93,10 +93,10 @@ namespace {
                 }
  
                 {
-                    std::shared_lock lock(state->canvas.key);
+                    std::shared_lock canvas_shared_lock(state->canvas.key);
 
                     for (auto& [chunk_pos, texels] : data) {
-                        std::lock_guard lock(state->canvas.get_chunk(chunk_pos)->key);
+                        std::lock_guard chunk_lock(state->canvas.get_chunk(chunk_pos)->key);
 
                         for (auto texel : *texels) {
                             state->canvas.set_color(chunk_pos, texel.pos, texel.color);
@@ -121,6 +121,41 @@ namespace {
             process(packet.data, packet.sender);
         }
     }
+
+    void backup_canvas() {
+        std::shared_lock canvas_shared_lock(state->canvas.key);
+        
+        for (auto& [chunk_pos, chunk] : state->canvas.get_chunks()) {
+            std::ofstream save_file;
+
+            {
+                std::lock_guard chunk_lock(chunk->key);
+
+                if (chunk->updated) {
+                    save_file.open("data/chunks/" + std::to_string(chunk_pos.x) + "_" + std::to_string(chunk_pos.y) + ".chunk", std::ios::binary);
+
+                    save_file.write((char*)&chunk_pos, sizeof space::chunk_pos_t);
+                    save_file << chunk->to_str();
+
+                    chunk->updated = false;
+                }
+            }
+
+            save_file.close();
+        }
+    }
+
+    fun::async backup_state() {
+        static constexpr uint32_t backup_interval = 2;
+
+        if (!std::filesystem::is_directory("data/chunks")) std::filesystem::create_directories("data/chunks");
+
+        while (true) {
+            std::this_thread::sleep_for(std::chrono::seconds(backup_interval));
+
+            backup_canvas();
+        }
+    }
 }
 
 
@@ -131,4 +166,6 @@ void space::slave::run(uint32_t thread_count, state_t* state) {
     for (uint32_t i = 0; i < thread_count; i++) {
         std::thread(worker, i).detach();
     }
+
+    std::thread(backup_state).detach();
 }

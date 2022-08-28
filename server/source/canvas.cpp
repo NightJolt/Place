@@ -23,3 +23,7 @@ void space::canvas_t::set_color(grid_pos_t grid_pos, fun::rgb_t color) {
 void space::canvas_t::set_color(chunk_pos_t chunk_pos, texel_pos_t texel_pos, fun::rgb_t color) {
     get_chunk(chunk_pos)->set_color(texel_pos, color);
 }
+
+space::canvas_t::chunk_map_t& space::canvas_t::get_chunks() {
+    return m_chunks;
+}
