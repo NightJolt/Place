@@ -10,6 +10,7 @@ namespace space::slave {
     void set_clientname(state_t&, const std::string&);
     void send_texel(state_t&, grid_pos_t, fun::rgb_t);
     void send_message(state_t&, const std::string&);
+    void request_chunk(state_t&, chunk_pos_t);
 
     void step(state_t&, float);
     

@@ -15,6 +15,7 @@ namespace space {
 
     public:
         void init_chunk(chunk_pos_t);
+        bool has_chunk(chunk_pos_t);
 
         chunk_t* get_chunk(chunk_pos_t);
 

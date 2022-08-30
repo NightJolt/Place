@@ -72,7 +72,7 @@ namespace {
         space::server_cmd_t cmd_type = (space::server_cmd_t)cmd_str[0];
 
         switch(cmd_type) {
-            case space::server_cmd_t::send_batch: {
+            case space::server_cmd_t::receive_batch: {
                 space::texel_batch_t batch;
                 space::texel_batch_t new_batch;
 
@@ -106,6 +106,37 @@ namespace {
                 }
 
                 state->server.send_all(new_batch.to_str());
+
+                break;
+            }
+
+            case space::server_cmd_t::request_chunk: {
+                space::texel_batch_t batch;
+                space::chunk_pos_t chunk_pos = *(space::chunk_pos_t*)&cmd_str[1];
+
+                bool should_send = false;
+
+                {
+                    std::shared_lock canvas_shared_lock(state->canvas.key);
+
+                    if (state->canvas.has_chunk(chunk_pos)) {
+                        space::chunk_t* chunk = state->canvas.get_chunk(chunk_pos);
+
+                        should_send = true;
+
+                        std::lock_guard chunk_lock(chunk->key);
+
+                        for (uint32_t y = 0; y < space::chunk_size; ++y) {
+                            for (uint32_t x = 0; x < space::chunk_size; ++x) {
+                                batch.add_texel(chunk_pos, space::texel_pos_t(x, y), chunk->get_color(space::texel_pos_t(x, y)));
+                            }
+                        }
+                    }
+                }
+
+                if (should_send) {
+                    state->server.send(batch.to_str(), sender);
+                }
 
                 break;
             }
@@ -148,12 +179,37 @@ namespace {
     fun::async backup_state() {
         static constexpr uint32_t backup_interval = 2;
 
-        if (!std::filesystem::is_directory("data/chunks")) std::filesystem::create_directories("data/chunks");
-
         while (true) {
             std::this_thread::sleep_for(std::chrono::seconds(backup_interval));
 
             backup_canvas();
+        }
+    }
+
+    void load_chunks() {
+        // this happens before running threads so no need to lock canvas
+
+        for (auto const& chunk_file : std::filesystem::directory_iterator("data/chunks")) {
+            std::ifstream chunk_file_stream(chunk_file.path().string(), std::ios::binary);
+
+            space::chunk_pos_t chunk_pos;
+            fun::str_t chunk_str;
+
+            chunk_file_stream.read((char*)&chunk_pos, sizeof space::chunk_pos_t);
+            chunk_file_stream >> chunk_str;
+
+            state->canvas.init_chunk(chunk_pos);
+            state->canvas.get_chunk(chunk_pos)->from_str(chunk_str);
+        }
+    }
+
+    void setup_directories() {
+        if (!std::filesystem::is_directory("data")) {
+            std::filesystem::create_directory("data");
+        }
+        
+        if (!std::filesystem::is_directory("data/chunks")) {
+            std::filesystem::create_directory("data/chunks");
         }
     }
 }
@@ -163,9 +219,13 @@ void space::slave::run(uint32_t thread_count, state_t* state) {
     ::state = state;
     ::packet_storage = &state->server.get_packet_storage();
 
+    ::setup_directories();
+
+    ::load_chunks();
+
     for (uint32_t i = 0; i < thread_count; i++) {
-        std::thread(worker, i).detach();
+        std::thread(::worker, i).detach();
     }
 
-    std::thread(backup_state).detach();
+    std::thread(::backup_state).detach();
 }

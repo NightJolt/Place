@@ -10,11 +10,14 @@ namespace space {
     typedef int32_t chunk_int_t;
     typedef uint8_t texel_int_t;
 
+    typedef uint16_t chunk_volume_t;
+
     typedef fun::vec2_t <grid_int_t> grid_pos_t;
     typedef fun::vec2_t <chunk_int_t> chunk_pos_t;
     typedef fun::vec2_t <texel_int_t> texel_pos_t;
 
-    inline constexpr texel_int_t chunk_size = 16;
+    inline constexpr int32_t chunk_size = 16;
+    inline constexpr int32_t chunk_volume = chunk_size * chunk_size;
 
     texel_pos_t array_to_texel(int32_t);
     int32_t texel_to_array(texel_pos_t);
@@ -31,15 +34,13 @@ namespace space {
 
 #pragma pack(push, 1)
     enum server_cmd_t {
-        set_pixel,
-        get_pixel,
+        // receive_pixel,
+        // request_pixel,
 
-        send_chunk,
-        get_chunk,
+        receive_chunk,
+        request_chunk,
 
-        send_batch,
-
-        count
+        receive_batch,
     };
 #pragma pack(pop)
 } 

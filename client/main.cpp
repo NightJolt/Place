@@ -61,6 +61,10 @@ int main () {
                 }
             }
         }
+
+        if (fun::input::pressed(sf::Keyboard::Space)) {
+            space::slave::request_chunk(state, space::grid_to_chunk(space::world_to_grid(window->get_mouse_world_position())));
+        }
         
         space::slave::step(state, fun::time::delta_time());
 

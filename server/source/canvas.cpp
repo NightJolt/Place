@@ -4,6 +4,10 @@ void space::canvas_t::init_chunk(chunk_pos_t chunk_pos) {
     if (!m_chunks.contains(chunk_pos)) m_chunks.emplace(chunk_pos, new chunk_t());
 }
 
+bool space::canvas_t::has_chunk(chunk_pos_t chunk_pos) {
+    return m_chunks.contains(chunk_pos);
+}
+
 space::chunk_t* space::canvas_t::get_chunk(chunk_pos_t chunk_pos) {    
     return m_chunks[chunk_pos];
 }

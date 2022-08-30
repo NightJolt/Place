@@ -17,12 +17,11 @@ void space::texel_batch_t::add_texel(chunk_pos_t chunk_pos, texel_pos_t texel_po
 fun::str_t space::texel_batch_t::to_str() {
     fun::str_t cmd;
 
-    // 1 + data.size() * sizeof chunk_pos_t + data.size() * sizeof uint16_t + total_texels * sizeof texel_t + 1
-    size_t data_size = m_data.size() * (sizeof chunk_pos_t + sizeof uint16_t) + m_total_texels * sizeof texel_t + 2;
-    cmd.resize(data_size);
+    // 1 + data.size() * sizeof chunk_pos_t + data.size() * sizeof chunk_volume_t + total_texels * sizeof texel_t + 1
+    cmd.resize(1 + m_data.size() * (sizeof chunk_pos_t + sizeof chunk_volume_t) + m_total_texels * sizeof texel_t);
     char* buffer = &cmd[0];
 
-    cmd[0] = server_cmd_t::send_batch;
+    cmd[0] = server_cmd_t::receive_batch;
 
     buffer += 1;
 
@@ -30,8 +29,8 @@ fun::str_t space::texel_batch_t::to_str() {
         *(chunk_pos_t*)buffer = chunk_pos;
         buffer += sizeof chunk_pos_t;
 
-        *(uint16_t*)buffer = (uint16_t)texels->size();
-        buffer += sizeof uint16_t;
+        *(chunk_volume_t*)buffer = (chunk_volume_t)texels->size();
+        buffer += sizeof chunk_volume_t;
 
         for (auto texel : *texels) {
             *(texel_pos_t*)buffer = texel.pos;
@@ -54,8 +53,8 @@ void space::texel_batch_t::from_str(const fun::str_t& cmd) {
         chunk_pos_t chunk_pos = *(chunk_pos_t*)buffer;
         buffer += sizeof chunk_pos_t;
 
-        uint32_t texel_count = *(uint16_t*)buffer;
-        buffer += sizeof uint16_t;
+        uint32_t texel_count = *(chunk_volume_t*)buffer;
+        buffer += sizeof chunk_volume_t;
 
         for (uint32_t i = 0; i < texel_count; i++) {
             add_texel(chunk_pos, *(texel_pos_t*)buffer, *(fun::rgb_t*)(buffer + sizeof texel_pos_t));

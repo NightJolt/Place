@@ -25,6 +25,16 @@ void space::slave::send_texel(state_t& state, grid_pos_t pos, fun::rgb_t color) 
     state.batch.add_texel(pos, state.tool.color);
 }
 
+void space::slave::request_chunk(state_t& state, chunk_pos_t chunk_pos) {
+    fun::str_t request;
+    request.resize(1 + sizeof grid_pos_t);
+
+    request[0] = space::request_chunk;
+    *(chunk_pos_t*)(&request[1]) = chunk_pos;
+
+    state.client.send(request);
+}
+
 void space::slave::send_message(state_t& state, const std::string& msg) {
     fun::command_t command;
 
@@ -66,7 +76,7 @@ void space::slave::process(state_t& state, const fun::network::packet_t& packet)
     space::server_cmd_t cmd_type = (space::server_cmd_t)packet.data[0];
 
     switch(cmd_type) {
-        case space::server_cmd_t::send_batch: {
+        case space::server_cmd_t::receive_batch: {
             space::texel_batch_t batch;
 
             batch.from_str(packet.data);

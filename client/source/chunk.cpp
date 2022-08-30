@@ -1,15 +1,15 @@
 #include "chunk.h"
 
-space::chunk_t::chunk_t(fun::vec2_t <space::chunk_int_t> p) {
-    m_vertices.resize(space::chunk_size * space::chunk_size * 4);
+space::chunk_t::chunk_t(chunk_pos_t chunk_pos) {
+    m_vertices.resize(chunk_volume * 4);
 
-    fun::vec2f_t position(space::chunk_to_grid(p));
+    fun::vec2f_t position(chunk_to_grid(chunk_pos));
 
     uint32_t i = 0;
     auto initial_color = fun::rgb_t::black.to_sf();
 
-    for (texel_int_t x = 0; x < space::chunk_size; x++) {
-        for (texel_int_t y = 0; y < space::chunk_size; y++) {
+    for (texel_int_t x = 0; x < chunk_size; x++) {
+        for (texel_int_t y = 0; y < chunk_size; y++) {
             m_vertices[i].position = (position + fun::vec2f_t(x, y)).to_sf();
             m_vertices[i + 1].position = (position + fun::vec2f_t(x + 1, y)).to_sf();
             m_vertices[i + 2].position = (position + fun::vec2f_t(x + 1, y + 1)).to_sf();
@@ -39,12 +39,12 @@ const std::vector <sf::Vertex>& space::chunk_t::get_vertices() {
     return m_vertices;
 }
 
-fun::rgb_t space::chunk_t::get_color(fun::vec2_t <space::texel_int_t> p) {
-    return m_vertices[space::texel_to_array(p)].color;
+fun::rgb_t space::chunk_t::get_color(texel_pos_t texel_pos) {
+    return m_vertices[texel_to_array(texel_pos)].color;
 }
 
-void space::chunk_t::set_color(fun::vec2_t <space::texel_int_t> p, fun::rgb_t color) {
-    uint32_t i = space::texel_to_array(p);
+void space::chunk_t::set_color(texel_pos_t texel_pos, fun::rgb_t color) {
+    uint32_t i = texel_to_array(texel_pos);
 
     m_vertices[i++].color = color.to_sf();
     m_vertices[i++].color = color.to_sf();
