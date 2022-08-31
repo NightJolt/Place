@@ -25,11 +25,11 @@ space::chunk_t::chunk_t(chunk_pos_t chunk_pos) {
     }
 }
 
-void space::chunk_t::set_data(const std::vector <fun::rgb_t>& data) {
+void space::chunk_t::set_colors(const std::vector <fun::rgb_t>& data) {
     uint32_t i = 0;
 
-    for (texel_int_t x = 0; x < space::chunk_size; x++) {
-        for (texel_int_t y = 0; y < space::chunk_size; y++) {
+    for (texel_int_t y = 0; y < space::chunk_size; y++) {
+        for (texel_int_t x = 0; x < space::chunk_size; x++) {
             set_color({ x, y }, data[i++]);
         }
     }

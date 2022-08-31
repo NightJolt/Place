@@ -1,9 +1,5 @@
 #include "space.h"
 
-namespace {
-    inline constexpr uint32_t chunk_size_squared = space::chunk_size * space::chunk_size;
-}
-
 fun::vec2_t <space::texel_int_t> space::array_to_texel(int32_t i) {
     return fun::vec2_t <space::texel_int_t> (i / chunk_size, i % chunk_size);
 }
@@ -37,48 +33,36 @@ fun::vec2_t <space::texel_int_t> space::grid_to_texel(fun::vec2_t <grid_int_t> p
     return fun::vec2_t <space::texel_int_t> (fun::math::mod(p.x, space::chunk_size), fun::math::mod(p.y, space::chunk_size));
 }
 
-std::string space::chunk::encode(chunk_int_t x, chunk_int_t y, fun::rgb_t* data) {
-    static constexpr size_t mem_size = sizeof uint32_t * 2 + ::chunk_size_squared * sizeof fun::rgb_t + 1;
+std::string space::chunk::encode(chunk_pos_t chunk_pos, fun::rgb_t* data) {
+    static constexpr size_t mem_size = sizeof chunk_pos_t + chunk_volume * sizeof fun::rgb_t;
 
     std::string encoded_data;
     encoded_data.resize(mem_size);
 
-    char* ptr = &*encoded_data.begin();
+    char* ptr = &encoded_data[0];
 
-    *(chunk_int_t*)ptr = x;
-    ptr += sizeof chunk_int_t;
+    *(chunk_pos_t*)ptr = chunk_pos;
+    ptr += sizeof chunk_pos_t;
 
-    *(chunk_int_t*)ptr = y;
-    ptr += sizeof chunk_int_t;
-
-    for (uint32_t i = 0; i < chunk_size_squared; i++) {
+    for (uint32_t i = 0; i < chunk_volume; i++) {
         *(fun::rgb_t*)ptr = *(data + i);
 
         ptr += sizeof fun::rgb_t;
     }
 
-    *(char*)ptr = '\n';
-
     return encoded_data;
 }
 
-std::vector <fun::rgb_t> space::chunk::decode(std::string data, chunk_int_t* px, chunk_int_t* py) {
-    std::vector <fun::rgb_t> texels;
-    texels.resize(::chunk_size_squared);
+space::chunk_pos_t space::chunk::decode_position(const fun::str_t& encoded_data) {
+    return *(chunk_pos_t*)&*encoded_data.begin();
+}
 
-    char* ptr = &*data.begin();
-
-    *px = *(chunk_int_t*)ptr;
-    ptr += sizeof chunk_int_t;
-
-    *py = *(chunk_int_t*)ptr;
-    ptr += sizeof chunk_int_t;
-
-    for (uint32_t i = 0; i < ::chunk_size_squared; i++) {
-        texels[i] = *(fun::rgb_t*)ptr;
-
+void space::chunk::decode_colors(const fun::str_t& encoded_data, fun::rgb_t* data) {
+    const char* ptr = &encoded_data[0];
+    ptr += sizeof chunk_pos_t;
+    
+    for (uint32_t i = 0; i < chunk_volume; i++) {
+        *(data + i) = *(fun::rgb_t*)ptr;
         ptr += sizeof fun::rgb_t;
     }
-
-    return texels;
 }

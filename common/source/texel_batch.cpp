@@ -14,7 +14,7 @@ void space::texel_batch_t::add_texel(chunk_pos_t chunk_pos, texel_pos_t texel_po
     m_total_texels++;
 }
 
-fun::str_t space::texel_batch_t::to_str() {
+fun::str_t space::texel_batch_t::to_cmd() {
     fun::str_t cmd;
 
     // 1 + data.size() * sizeof chunk_pos_t + data.size() * sizeof chunk_volume_t + total_texels * sizeof texel_t + 1
@@ -44,7 +44,7 @@ fun::str_t space::texel_batch_t::to_str() {
     return cmd;
 }
 
-void space::texel_batch_t::from_str(const fun::str_t& cmd) {
+void space::texel_batch_t::from_cmd(const fun::str_t& cmd) {
     const char* buffer = &cmd[0];
     
     buffer += 1;

@@ -52,9 +52,7 @@ void space::slave::step(state_t& state, float delta_time) {
         if (state.batch_cooldown <= 0 || state.batch_max_texels <= state.batch.get_total_texels()) {
             state.batch_cooldown = state.batch_send_interval;
 
-            fun::debugger::push_msg("sending batch: " + std::to_string(state.batch.get_total_texels()));
-
-            state.client.send(state.batch.to_str());
+            state.client.send(state.batch.to_cmd());
             state.batch.clear();
         }
     }
@@ -79,9 +77,7 @@ void space::slave::process(state_t& state, const fun::network::packet_t& packet)
         case space::server_cmd_t::receive_batch: {
             space::texel_batch_t batch;
 
-            batch.from_str(packet.data);
-
-            fun::debugger::push_msg("received batch of " + std::to_string(batch.get_total_texels()) + " texels");
+            batch.from_cmd(packet.data);
 
             auto& data = batch.get_data();
 
@@ -90,6 +86,21 @@ void space::slave::process(state_t& state, const fun::network::packet_t& packet)
                     state.canvas.set_color(chunk_pos, texel.pos, texel.color);
                 }
             }
+
+            break;
+        }
+
+        case space::server_cmd_t::receive_chunk: {
+            const fun::str_t& data = packet.data.substr(1);
+
+            chunk_pos_t chunk_pos = space::chunk::decode_position(data);
+
+            std::vector <fun::rgb_t> colors;
+            colors.resize(space::chunk_volume);
+
+            space::chunk::decode_colors(data, &colors[0]);
+
+            state.canvas.get_chunk(chunk_pos)->set_colors(colors);
 
             break;
         }

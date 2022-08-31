@@ -76,11 +76,9 @@ namespace {
                 space::texel_batch_t batch;
                 space::texel_batch_t new_batch;
 
-                batch.from_str(cmd_str);
+                batch.from_cmd(cmd_str);
 
                 state->statistics.texels_placed += batch.get_total_texels();
-
-                fun::debugger::push_msg("received batch of " + std::to_string(batch.get_total_texels()) + " texels");
 
                 auto& data = batch.get_data();
 
@@ -105,14 +103,15 @@ namespace {
                     }
                 }
 
-                state->server.send_all(new_batch.to_str());
+                state->server.send_all(new_batch.to_cmd());
 
                 break;
             }
 
             case space::server_cmd_t::request_chunk: {
-                space::texel_batch_t batch;
                 space::chunk_pos_t chunk_pos = *(space::chunk_pos_t*)&cmd_str[1];
+
+                fun::str_t chunk_str;
 
                 bool should_send = false;
 
@@ -125,17 +124,15 @@ namespace {
                         should_send = true;
 
                         std::lock_guard chunk_lock(chunk->key);
-
-                        for (uint32_t y = 0; y < space::chunk_size; ++y) {
-                            for (uint32_t x = 0; x < space::chunk_size; ++x) {
-                                batch.add_texel(chunk_pos, space::texel_pos_t(x, y), chunk->get_color(space::texel_pos_t(x, y)));
-                            }
-                        }
+                        
+                        chunk_str = space::chunk::encode(chunk_pos, chunk->get_colors());
                     }
                 }
 
                 if (should_send) {
-                    state->server.send(batch.to_str(), sender);
+                    chunk_str.insert(chunk_str.begin(), (char)space::server_cmd_t::receive_chunk);
+
+                    state->server.send(chunk_str, sender);
                 }
 
                 break;
@@ -146,8 +143,6 @@ namespace {
     fun::async worker(uint32_t thread_id) {
         while (true) {
             fun::network::packet_t packet = packet_storage->read();
-
-            fun::debugger::push_msg("processing " + std::to_string(packet.data.length()) + " bytes on thead " + std::to_string(thread_id) + " : " + packet.data, "slave");
 
             process(packet.data, packet.sender);
         }
@@ -165,8 +160,7 @@ namespace {
                 if (chunk->updated) {
                     save_file.open("data/chunks/" + std::to_string(chunk_pos.x) + "_" + std::to_string(chunk_pos.y) + ".chunk", std::ios::binary);
 
-                    save_file.write((char*)&chunk_pos, sizeof space::chunk_pos_t);
-                    save_file << chunk->to_str();
+                    save_file << space::chunk::encode(chunk_pos, chunk->get_colors());
 
                     chunk->updated = false;
                 }
@@ -192,14 +186,13 @@ namespace {
         for (auto const& chunk_file : std::filesystem::directory_iterator("data/chunks")) {
             std::ifstream chunk_file_stream(chunk_file.path().string(), std::ios::binary);
 
-            space::chunk_pos_t chunk_pos;
             fun::str_t chunk_str;
-
-            chunk_file_stream.read((char*)&chunk_pos, sizeof space::chunk_pos_t);
             chunk_file_stream >> chunk_str;
 
+            space::chunk_pos_t chunk_pos = space::chunk::decode_position(chunk_str);
+
             state->canvas.init_chunk(chunk_pos);
-            state->canvas.get_chunk(chunk_pos)->from_str(chunk_str);
+            space::chunk::decode_colors(chunk_str, state->canvas.get_chunk(chunk_pos)->get_colors());
         }
     }
 

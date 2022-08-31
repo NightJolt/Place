@@ -15,9 +15,6 @@ namespace space {
 
         fun::rgb_t* get_colors();
 
-        fun::str_t to_str();
-        void from_str(fun::str_t&);
-
         std::mutex key;
         bool updated;
 

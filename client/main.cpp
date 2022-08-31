@@ -70,7 +70,7 @@ int main () {
 
         space::interf::draw(state);
         
-        fun::debugger::display();
+        // fun::debugger::display();
 
         window->draw_world(state.canvas, 0);
 

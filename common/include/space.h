@@ -28,8 +28,9 @@ namespace space {
     texel_pos_t grid_to_texel(grid_pos_t);
 
     namespace chunk {
-        std::string encode(chunk_int_t, chunk_int_t, fun::rgb_t*);
-        std::vector <fun::rgb_t> decode(std::string, chunk_int_t*, chunk_int_t*);
+        fun::str_t encode(chunk_pos_t, fun::rgb_t*);
+        chunk_pos_t decode_position(const fun::str_t&);
+        void decode_colors(const fun::str_t&, fun::rgb_t*);
     }
 
 #pragma pack(push, 1)
