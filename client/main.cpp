@@ -20,6 +20,7 @@ int main () {
 
     window->set_vsync(false);
     window->target_framerate(60);
+    window->set_world_view({ 0, 0 }, 64);
 
     space::state_t state;
     state.tool.mode = space::tool_mode_t::brush;
