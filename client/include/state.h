@@ -17,8 +17,10 @@ namespace space {
     struct tool_t {
         tool_mode_t mode;
         fun::rgb_t color;
-        // bool fill_line_gaps;
-        // fun::vec2f_t last_position;
+
+        bool fill_line_gaps;
+        fun::vec2f_t last_frame_mouse_position;
+        bool last_frame_mouse_active;
     };
 
     struct state_t {

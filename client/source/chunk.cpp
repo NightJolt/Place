@@ -1,6 +1,6 @@
 #include "chunk.h"
 
-space::chunk_t::chunk_t(chunk_pos_t chunk_pos) {
+space::chunk_t::chunk_t(chunk_pos_t chunk_pos) : synced(false) {
     m_vertices.resize(chunk_volume * 4);
 
     fun::vec2f_t position(chunk_to_grid(chunk_pos));

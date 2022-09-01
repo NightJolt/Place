@@ -41,6 +41,9 @@ namespace space {
         receive_chunk,
         request_chunk,
 
+        request_all_chunks,
+        receive_all_chunks,
+
         receive_batch,
     };
 #pragma pack(pop)

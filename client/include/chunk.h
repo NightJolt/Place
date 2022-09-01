@@ -16,6 +16,8 @@ namespace space {
 
         fun::rgb_t get_color(fun::vec2_t <space::texel_int_t>);
         void set_color(fun::vec2_t <space::texel_int_t>, fun::rgb_t);
+        
+        bool synced;
 
     private:
         std::vector <sf::Vertex> m_vertices;

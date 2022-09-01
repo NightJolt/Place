@@ -73,6 +73,8 @@ void space::slave::step(state_t& state, float delta_time) {
 void space::slave::process(state_t& state, const fun::network::packet_t& packet) {
     space::server_cmd_t cmd_type = (space::server_cmd_t)packet.data[0];
 
+    fun::debugger::push_msg("received bytes: " + std::to_string(packet.data.size()));
+
     switch(cmd_type) {
         case space::server_cmd_t::receive_batch: {
             space::texel_batch_t batch;

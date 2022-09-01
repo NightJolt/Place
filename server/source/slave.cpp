@@ -71,6 +71,8 @@ namespace {
     void process(const fun::str_t& cmd_str, sf::TcpSocket* sender) {
         space::server_cmd_t cmd_type = (space::server_cmd_t)cmd_str[0];
 
+        // fun::debugger::push_msg("received bytes: " + std::to_string(cmd_str.size()));
+
         switch(cmd_type) {
             case space::server_cmd_t::receive_batch: {
                 space::texel_batch_t batch;

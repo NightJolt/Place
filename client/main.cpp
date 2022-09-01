@@ -24,6 +24,7 @@ int main () {
     space::state_t state;
     state.tool.mode = space::tool_mode_t::brush;
     state.tool.color = fun::rgb_t::white;
+    state.tool.fill_line_gaps = true;
     state.batch_max_texels = 256;
     state.batch_send_interval = 1.f;
     state.batch_cooldown = state.batch_send_interval;
@@ -39,16 +40,58 @@ int main () {
         if (fun::input::pressed(sf::Keyboard::I)) state.tool.mode = space::tool_mode_t::eyedrop;
         if (fun::input::pressed(sf::Keyboard::E)) state.tool.mode = space::tool_mode_t::erase;
 
+        bool mouse_was_active = false;
+
         if (fun::input::hold(sf::Mouse::Left)) {
             switch(state.tool.mode) {
-                case space::tool_mode_t::brush: {
-                    space::slave::send_texel(state, space::world_to_grid(window->get_mouse_world_position()), state.tool.color);
-
-                    break;
-                }
-                
+                case space::tool_mode_t::brush:
                 case space::tool_mode_t::erase: {
-                    space::slave::send_texel(state, space::world_to_grid(window->get_mouse_world_position()), fun::rgb_t::black);
+                    fun::rgb_t color = (state.tool.mode == space::tool_mode_t::brush) ? state.tool.color : fun::rgb_t::black;
+
+                    if (!state.tool.last_frame_mouse_active || !state.tool.fill_line_gaps) {
+                        space::slave::send_texel(state, space::world_to_grid(window->get_mouse_world_position()), state.tool.color);
+                    } else {
+                        fun::vec2f_t start = state.tool.last_frame_mouse_position;
+                        fun::vec2f_t end = window->get_mouse_world_position();
+                        
+                        const bool steep = (std::fabs(end.y - start.y) > std::fabs(end.x - start.x));
+
+                        if(steep) {
+                            std::swap(start.x, start.y);
+                            std::swap(end.x, end.y);
+                        }
+
+                        if(start.x > end.x) {
+                            std::swap(start, end);
+                        }
+
+                        const float dx = end.x - start.x;
+                        const float dy = std::fabs(end.y - start.y);
+                        
+                        float error = dx * .5f;
+                        const int ystep = (start.y < end.y) ? 1 : -1;
+                        int y = start.y;
+
+                        const int end_x = end.x;
+
+                        for(int x = start.x; x <= end_x; x++) {
+                            if(steep) {
+                                space::slave::send_texel(state, space::world_to_grid(fun::vec2f_t(y, x)), color);
+                            }  else {
+                                space::slave::send_texel(state, space::world_to_grid(fun::vec2f_t(x, y)), color);
+                            }
+                                    
+                            error -= dy;
+
+                            if(error < 0) {
+                                y += ystep;
+                                error += dx;
+                            }
+                        }
+                    }
+
+                    state.tool.last_frame_mouse_position = window->get_mouse_world_position();
+                    mouse_was_active = true;
 
                     break;
                 }
@@ -62,15 +105,55 @@ int main () {
             }
         }
 
-        if (fun::input::pressed(sf::Keyboard::Space)) {
-            space::slave::request_chunk(state, space::grid_to_chunk(space::world_to_grid(window->get_mouse_world_position())));
-        }
+        state.tool.last_frame_mouse_active = mouse_was_active;
+
+        // {
+        //     uint32_t margin = 1;
+
+        //     fun::vec2f_t tl_view = window->world_view.getCenter() - window->world_view.getSize() * .5f;
+        //     fun::vec2f_t br_view = window->world_view.getCenter() + window->world_view.getSize() * .5f;
+
+        //     fun::vec2i_t tl_chunk = space::grid_to_chunk(space::world_to_grid(tl_view));
+        //     fun::vec2i_t br_chunk = space::grid_to_chunk(space::world_to_grid(br_view));
+
+        //     tl_chunk.x -= margin;
+        //     tl_chunk.y -= margin;
+
+        //     br_chunk.x += margin;
+        //     br_chunk.y += margin;
+
+        //     for (auto& [chunk_pos, chunk] : state.canvas.get_chunks()) {
+        //         if (chunk_pos.x < tl_chunk.x || chunk_pos.x > br_chunk.x || chunk_pos.y < tl_chunk.y || chunk_pos.y > br_chunk.y) {
+        //             chunk->synced = false;
+
+        //             continue;
+        //         }
+
+        //         if (!chunk->synced) {
+        //             space::slave::request_chunk(state, chunk_pos);
+
+        //             chunk->synced = true;
+        //         }
+        //     }
+
+        //     for (int32_t x = tl_chunk.x; x <= br_chunk.x; x++) {
+        //         for (int32_t y = tl_chunk.y; y <= br_chunk.y; y++) {
+        //             space::chunk_t* chunk = state.canvas.get_chunk({ x, y });
+
+        //             if (!chunk->synced) {
+        //                 space::slave::request_chunk(state, fun::vec2f_t(x, y));
+
+        //                 chunk->synced = true;
+        //             }
+        //         }
+        //     }
+        // }
         
         space::slave::step(state, fun::time::delta_time());
 
         space::interf::draw(state);
         
-        // fun::debugger::display();
+        fun::debugger::display();
 
         window->draw_world(state.canvas, 0);
 
