@@ -46,19 +46,18 @@ fun::str_t space::chunk::encode(chunk_pos_t chunk_pos, fun::rgb_t* data) {
 
     for (uint32_t i = 0; i < chunk_volume; i++) {
         *(fun::rgb_t*)ptr = *(data + i);
-
         ptr += sizeof fun::rgb_t;
     }
 
     return encoded_data;
 }
 
-space::chunk_pos_t space::chunk::decode_position(const fun::str_t& encoded_data) {
-    return *(chunk_pos_t*)&*encoded_data.begin();
+space::chunk_pos_t space::chunk::decode_position(const fun::str_t& encoded_data, uint32_t offset) {
+    return *(chunk_pos_t*)&encoded_data[offset];
 }
 
-void space::chunk::decode_colors(const fun::str_t& encoded_data, fun::rgb_t* data) {
-    const char* ptr = &encoded_data[0];
+void space::chunk::decode_colors(const fun::str_t& encoded_data, fun::rgb_t* data, uint32_t offset) {
+    const char* ptr = &encoded_data[offset];
     ptr += sizeof chunk_pos_t;
     
     for (uint32_t i = 0; i < chunk_volume; i++) {

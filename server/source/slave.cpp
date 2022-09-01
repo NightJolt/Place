@@ -139,6 +139,26 @@ namespace {
 
                 break;
             }
+
+            case space::server_cmd_t::request_all_chunks: {
+                fun::str_t chunks_str(1, (char)space::server_cmd_t::receive_all_chunks);
+
+                {
+                    std::shared_lock canvas_shared_lock(state->canvas.key);
+
+                    auto& chunks = state->canvas.get_chunks();
+
+                    for (auto& [chunk_pos, chunk] : chunks) {
+                        std::lock_guard chunk_lock(chunk->key);
+
+                        chunks_str += space::chunk::encode(chunk_pos, chunk->get_colors());
+                    }
+                }
+                
+                if (chunks_str.size() > 1) {
+                    state->server.send(chunks_str, sender);
+                }
+            }
         }
     }
 
@@ -185,6 +205,8 @@ namespace {
     void load_chunks() {
         // this happens before running threads so no need to lock canvas
 
+        uint32_t chunk_count = 0;
+
         for (auto const& chunk_file : std::filesystem::directory_iterator("data/chunks")) {
             std::ifstream chunk_file_stream(chunk_file.path().string(), std::ios::binary);
 
@@ -195,7 +217,11 @@ namespace {
 
             state->canvas.init_chunk(chunk_pos);
             space::chunk::decode_colors(chunk_str, state->canvas.get_chunk(chunk_pos)->get_colors());
+
+            chunk_count++;
         }
+
+        fun::debugger::push_msg("loaded " + std::to_string(chunk_count) + " chunks");
     }
 
     void setup_directories() {

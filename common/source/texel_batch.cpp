@@ -21,7 +21,7 @@ fun::str_t space::texel_batch_t::to_cmd() {
     cmd.resize(1 + m_data.size() * (sizeof chunk_pos_t + sizeof chunk_volume_t) + m_total_texels * sizeof texel_t);
     char* buffer = &cmd[0];
 
-    cmd[0] = server_cmd_t::receive_batch;
+    cmd[0] = (char)server_cmd_t::receive_batch;
 
     buffer += 1;
 

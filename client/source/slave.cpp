@@ -29,10 +29,14 @@ void space::slave::request_chunk(state_t& state, chunk_pos_t chunk_pos) {
     fun::str_t request;
     request.resize(1 + sizeof grid_pos_t);
 
-    request[0] = space::request_chunk;
+    request[0] = (char)space::server_cmd_t::request_chunk;
     *(chunk_pos_t*)(&request[1]) = chunk_pos;
 
     state.client.send(request);
+}
+
+void space::slave::request_all_chunks(state_t& state) {
+    state.client.send(std::string(1, (char)space::server_cmd_t::request_all_chunks));
 }
 
 void space::slave::send_message(state_t& state, const std::string& msg) {
@@ -103,6 +107,24 @@ void space::slave::process(state_t& state, const fun::network::packet_t& packet)
             space::chunk::decode_colors(data, &colors[0]);
 
             state.canvas.get_chunk(chunk_pos)->set_colors(colors);
+
+            break;
+        }
+
+        case space::server_cmd_t::receive_all_chunks: {
+            uint32_t ind = 1;
+
+            std::vector <fun::rgb_t> colors;
+            colors.resize(space::chunk_volume);
+
+            while (ind < packet.data.size()) {
+                chunk_pos_t chunk_pos = space::chunk::decode_position(packet.data, ind);
+
+                space::chunk::decode_colors(packet.data, &colors[0], ind);
+                state.canvas.get_chunk(chunk_pos)->set_colors(colors);
+
+                ind += sizeof chunk_pos_t + space::chunk_volume * sizeof fun::rgb_t;
+            }
 
             break;
         }

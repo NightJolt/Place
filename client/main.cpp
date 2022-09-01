@@ -35,7 +35,7 @@ int main () {
         fun::winmgr::update();
         fun::input::listen();
 
-        window->world_view.move((fun::input::keyboard_2d() * fun::vec2f_t(1, -1) * window->zoom * 200.f * fun::time::delta_time()).to_sf());
+        window->world_view.move((fun::input::keyboard_2d() * fun::vec2f_t(1, -1) * window->zoom * 50.f * fun::time::delta_time()).to_sf());
 
         if (fun::input::pressed(sf::Keyboard::B)) state.tool.mode = space::tool_mode_t::brush;
         if (fun::input::pressed(sf::Keyboard::I)) state.tool.mode = space::tool_mode_t::eyedrop;

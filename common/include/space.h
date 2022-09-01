@@ -29,12 +29,14 @@ namespace space {
 
     namespace chunk {
         fun::str_t encode(chunk_pos_t, fun::rgb_t*);
-        chunk_pos_t decode_position(const fun::str_t&);
-        void decode_colors(const fun::str_t&, fun::rgb_t*);
+        // chunk_pos_t decode_position(const fun::str_t&);
+        // void decode_colors(const fun::str_t&, fun::rgb_t*);
+        chunk_pos_t decode_position(const fun::str_t&, uint32_t = 0);
+        void decode_colors(const fun::str_t&, fun::rgb_t*, uint32_t = 0);
     }
 
 #pragma pack(push, 1)
-    enum server_cmd_t {
+    enum class server_cmd_t {
         // receive_pixel,
         // request_pixel,
 

@@ -91,6 +91,8 @@ namespace {
                     connect_to_server_window_enabled = false;
                     
                     state.canvas.clear();
+
+                    space::slave::request_all_chunks(state);
                 }
             }
 

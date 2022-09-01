@@ -34,7 +34,7 @@ int main () {
 
         state.server.listen();
         
-        fun::debugger::display();
+        // fun::debugger::display();
 
         window->display(sf::Color::Black);
     }
