@@ -21,8 +21,8 @@ void space::slave::set_clientname(state_t& state, const std::string& clientname)
 void space::slave::send_texel(state_t& state, grid_pos_t pos, fun::rgb_t color) {
     if (state.canvas.get_color(pos) == color) return;
     
-    state.canvas.set_color(pos, state.tool.color);
-    state.batch.add_texel(pos, state.tool.color);
+    state.canvas.set_color(pos, color);
+    state.batch.add_texel(pos, color);
 }
 
 void space::slave::request_chunk(state_t& state, chunk_pos_t chunk_pos) {

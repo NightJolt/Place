@@ -21,6 +21,7 @@ namespace space {
         bool fill_line_gaps;
         fun::vec2f_t last_frame_mouse_position;
         bool last_frame_mouse_active;
+        fun::vec2i_t last_grid_position;
     };
 
     struct state_t {

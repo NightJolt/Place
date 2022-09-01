@@ -41,6 +41,7 @@ int main () {
         if (fun::input::pressed(sf::Keyboard::E)) state.tool.mode = space::tool_mode_t::erase;
 
         bool mouse_was_active = false;
+        fun::vec2f_t mouse_pos = window->get_mouse_world_position();
 
         if (fun::input::hold(sf::Mouse::Left)) {
             switch(state.tool.mode) {
@@ -49,19 +50,19 @@ int main () {
                     fun::rgb_t color = (state.tool.mode == space::tool_mode_t::brush) ? state.tool.color : fun::rgb_t::black;
 
                     if (!state.tool.last_frame_mouse_active || !state.tool.fill_line_gaps) {
-                        space::slave::send_texel(state, space::world_to_grid(window->get_mouse_world_position()), state.tool.color);
+                        space::slave::send_texel(state, space::world_to_grid(mouse_pos), state.tool.color);
                     } else {
-                        fun::vec2f_t start = state.tool.last_frame_mouse_position;
-                        fun::vec2f_t end = window->get_mouse_world_position();
+                        fun::vec2f_t start = space::world_to_grid(state.tool.last_frame_mouse_position);
+                        fun::vec2f_t end = space::world_to_grid(mouse_pos);
                         
                         const bool steep = (std::fabs(end.y - start.y) > std::fabs(end.x - start.x));
 
-                        if(steep) {
+                        if (steep) {
                             std::swap(start.x, start.y);
                             std::swap(end.x, end.y);
                         }
 
-                        if(start.x > end.x) {
+                        if (start.x > end.x) {
                             std::swap(start, end);
                         }
 
@@ -69,28 +70,32 @@ int main () {
                         const float dy = std::fabs(end.y - start.y);
                         
                         float error = dx * .5f;
-                        const int ystep = (start.y < end.y) ? 1 : -1;
-                        int y = start.y;
+                        const int32_t ystep = (start.y < end.y) ? 1 : -1;
 
-                        const int end_x = end.x;
+                        int32_t x = start.x;
+                        int32_t y = start.y;
 
-                        for(int x = start.x; x <= end_x; x++) {
-                            if(steep) {
-                                space::slave::send_texel(state, space::world_to_grid(fun::vec2f_t(y, x)), color);
+                        const int32_t end_x = end.x;
+
+                        for (; x <= end_x; x++) {
+                            if (steep) {
+                                space::slave::send_texel(state, fun::vec2i_t(y, x), color);
                             }  else {
-                                space::slave::send_texel(state, space::world_to_grid(fun::vec2f_t(x, y)), color);
+                                space::slave::send_texel(state, fun::vec2i_t(x, y), color);
                             }
                                     
                             error -= dy;
 
-                            if(error < 0) {
+                            if (error < 0) {
                                 y += ystep;
                                 error += dx;
                             }
                         }
+
+                        state.tool.last_grid_position = { x, y };
                     }
 
-                    state.tool.last_frame_mouse_position = window->get_mouse_world_position();
+                    state.tool.last_frame_mouse_position = mouse_pos;
                     mouse_was_active = true;
 
                     break;
