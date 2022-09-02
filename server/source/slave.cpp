@@ -39,35 +39,6 @@ namespace {
     space::state_t* state;
     fun::network::threadsafe_packet_storage_t* packet_storage;
 
-    // void process(const fun::str_t& cmd_str, sf::TcpSocket* sender) {
-    //     fun::command_t command_parser(cmd_str);
-    //     const fun::str_t& command = command_parser.get_command();
-
-    //     if (command == "f") {
-    //         // ::send_chunk(server, canvas, { (space::chunk_int_t)std::stoi(command_parser.get_arg(0)), (space::chunk_int_t)std::stoi(command_parser.get_arg(1)) }, sender);
-    //     } else if (command == "s") {
-    //         fun::vec2i_t pos = {
-    //             std::stoi(command_parser.get_arg(0)),
-    //             std::stoi(command_parser.get_arg(1))
-    //         };
-
-    //         fun::rgb_t color = {
-    //             (uint8_t)std::stoi(command_parser.get_arg(2)),
-    //             (uint8_t)std::stoi(command_parser.get_arg(3)),
-    //             (uint8_t)std::stoi(command_parser.get_arg(4))
-    //         };
-
-    //         state->canvas.set_color({ pos.x, pos.y }, color);
-
-    //         state->statistics.texels_placed++;
-
-    //         // ::send_texel(server, pos, color);
-    //         state->server.send_all(cmd_str, sender);
-    //     } else if (command == "cn") {
-    //         state->client_datas[sender].name = command_parser.get_arg(0);
-    //     }
-    // }
-
     void process(const fun::str_t& cmd_str, sf::TcpSocket* sender) {
         space::server_cmd_t cmd_type = (space::server_cmd_t)cmd_str[0];
 
@@ -81,6 +52,7 @@ namespace {
                 batch.from_cmd(cmd_str);
 
                 state->statistics.texels_placed += batch.get_total_texels();
+                state->clients_data[sender].texels_placed += batch.get_total_texels();
 
                 auto& data = batch.get_data();
 
@@ -158,6 +130,25 @@ namespace {
                 if (chunks_str.size() > 1) {
                     state->server.send(chunks_str, sender);
                 }
+
+                break;
+            }
+
+            case space::server_cmd_t::receive_message: {
+                state->server.send_all(cmd_str, sender);
+
+                fun::command_t command;
+                command.set_command(std::string(1, (char)space::server_cmd_t::receive_message));
+
+                std::string message = state->clients_data[sender].name + ": " + fun::command_t(cmd_str).get_arg(0);
+
+                command.add_arg(message);
+
+                message = command.build();
+
+                state->server.send_all(command.build());
+
+                break;
             }
         }
     }
@@ -221,7 +212,7 @@ namespace {
             chunk_count++;
         }
 
-        fun::debugger::push_msg("loaded " + std::to_string(chunk_count) + " chunks");
+        fun::debugger::push_msg("loaded " + std::to_string(chunk_count) + " chunks", "save");
     }
 
     void setup_directories() {
@@ -234,7 +225,6 @@ namespace {
         }
     }
 }
-
 
 void space::slave::run(uint32_t thread_count, state_t* state) {
     ::state = state;

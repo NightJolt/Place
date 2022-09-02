@@ -47,6 +47,8 @@ namespace space {
         receive_all_chunks,
 
         receive_batch,
+
+        receive_message
     };
 #pragma pack(pop)
 } 

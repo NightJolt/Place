@@ -14,13 +14,13 @@ namespace {
                     ImGui::BeginChild("ScrollingRegion", ImVec2(0, -text_area_reserve), false, ImGuiWindowFlags_HorizontalScrollbar);
                         ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(4, 1));
 
-                        // for (int i = 0; i < chat_history.size(); i++) {
-                        //     const char* item = chat_history[i].c_str();
-                        //     //ImVec4 color = color = ImVec4(1.0f, 0.4f, 0.4f, 1.0f);
-                        //     //ImGui::PushStyleColor(ImGuiCol_Text, color);
-                        //     ImGui::TextUnformatted(item);
-                        //     //ImGui::PopStyleColor();
-                        // }
+                        for (int i = 0; i < state.messages.size(); i++) {
+                            const char* item = state.messages[i].c_str();
+                            //ImVec4 color = color = ImVec4(1.0f, 0.4f, 0.4f, 1.0f);
+                            //ImGui::PushStyleColor(ImGuiCol_Text, color);
+                            ImGui::TextUnformatted(item);
+                            //ImGui::PopStyleColor();
+                        }
 
                         if (ImGui::GetScrollY() >= ImGui::GetScrollMaxY())
                             ImGui::SetScrollHereY(1.0f);
@@ -38,7 +38,7 @@ namespace {
                             memset(console_input, 0, sizeof *console_input);
 
                             // if (input[0] == '/')
-                            //     space::slave::send_message(state, input);
+                                space::slave::send_message(state, input);
                             // else
                             //     space::slave::process_command(state, input);
                         }

@@ -11,6 +11,6 @@ namespace space {
         fun::network::server_t server;
         canvas_t canvas;
         statistics_t statistics;
-        std::unordered_map <sf::TcpSocket*, client_data_t> client_datas;
+        std::unordered_map <sf::TcpSocket*, client_data_t> clients_data;
     };
 }

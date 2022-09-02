@@ -9,11 +9,11 @@
 // e - export
 // msg - message
 
-void space::slave::set_clientname(state_t& state, const std::string& clientname) {
+void space::slave::send_message(state_t& state, const std::string& message) {
     fun::command_t command;
 
-    command.set_command("cn");
-    command.set_command(clientname);
+    command.set_command(std::string(1, (char)server_cmd_t::receive_message));
+    command.add_arg(message);
 
     state.client.send(command.build());
 }
@@ -37,15 +37,6 @@ void space::slave::request_chunk(state_t& state, chunk_pos_t chunk_pos) {
 
 void space::slave::request_all_chunks(state_t& state) {
     state.client.send(std::string(1, (char)space::server_cmd_t::request_all_chunks));
-}
-
-void space::slave::send_message(state_t& state, const std::string& msg) {
-    fun::command_t command;
-
-    command.set_command("msg");
-    command.add_arg(msg);
-
-    state.client.send(command.build());
 }
 
 void space::slave::step(state_t& state, float delta_time) {
@@ -125,6 +116,14 @@ void space::slave::process(state_t& state, const fun::network::packet_t& packet)
 
                 ind += sizeof chunk_pos_t + space::chunk_volume * sizeof fun::rgb_t;
             }
+
+            break;
+        }
+
+        case space::server_cmd_t::receive_message: {
+            fun::command_t command(packet.data);
+
+            state.messages.emplace_back(command.get_arg(0));
 
             break;
         }
