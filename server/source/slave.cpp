@@ -156,7 +156,7 @@ namespace {
                 } else {
                     command.add_arg(received_cmd.get_arg(0));
 
-                    state->server.send_all(command.build());
+                    state->server.send_all(state->clients_data[sender].name + " : " + command.build());
                 }
 
                 break;

@@ -15,7 +15,7 @@ namespace {
                         ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(4, 1));
 
                         for (int i = 0; i < state.messages.size(); i++) {
-                            const char* item = state.messages[i].c_str();
+                            const char* item = state.messages[i].text.c_str();
                             //ImVec4 color = color = ImVec4(1.0f, 0.4f, 0.4f, 1.0f);
                             //ImGui::PushStyleColor(ImGuiCol_Text, color);
                             ImGui::TextUnformatted(item);
