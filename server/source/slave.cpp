@@ -135,18 +135,29 @@ namespace {
             }
 
             case space::server_cmd_t::receive_message: {
-                state->server.send_all(cmd_str, sender);
+                fun::command_t received_cmd(cmd_str);
 
                 fun::command_t command;
                 command.set_command(std::string(1, (char)space::server_cmd_t::receive_message));
 
-                std::string message = state->clients_data[sender].name + ": " + fun::command_t(cmd_str).get_arg(0);
+                if (received_cmd.has_key("target")) {
+                    std::string target = received_cmd.get_val("target");
 
-                command.add_arg(message);
+                    for (auto& [client, data] : state->clients_data) {
+                        if (data.name == target) {
+                            command.add_arg(received_cmd.get_arg(0));
+                            command.add_key_val("gossip", state->clients_data[sender].name);
 
-                message = command.build();
+                            state->server.send(command.build(), client);
 
-                state->server.send_all(command.build());
+                            break;
+                        }
+                    }
+                } else {
+                    command.add_arg(received_cmd.get_arg(0));
+
+                    state->server.send_all(command.build());
+                }
 
                 break;
             }

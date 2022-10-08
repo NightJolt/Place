@@ -6,7 +6,7 @@ namespace {
     void draw_console_window(space::state_t& state) {
         ImGui::Begin("Console", &console_window_enabled);
             ImGui::BeginGroup();
-                ImGui::BeginChild("RoomView");
+                ImGui::BeginChild("TextView");
 
                     const float text_area_height = ImGui::GetFrameHeightWithSpacing();
                     const float text_area_reserve = ImGui::GetStyle().ItemSpacing.y + text_area_height;
@@ -37,10 +37,10 @@ namespace {
                         if (!input.empty()) {
                             memset(console_input, 0, sizeof *console_input);
 
-                            // if (input[0] == '/')
+                            if (input[0] == '/')
+                                space::slave::process_command(state, input);
+                            else
                                 space::slave::send_message(state, input);
-                            // else
-                            //     space::slave::process_command(state, input);
                         }
 
                         reclaim_focus = true;
@@ -119,7 +119,7 @@ namespace {
                 if (ImGui::MenuItem("Brush")) {
                     brush_window_enabled = true;
                 }
-
+                
                 if (ImGui::MenuItem("Console")) {
                     console_window_enabled = true;
                 }

@@ -18,6 +18,36 @@ void space::slave::send_message(state_t& state, const std::string& message) {
     state.client.send(command.build());
 }
 
+void space::slave::process_command(state_t& state, std::string& cmd_str) {
+    fun::command_t cmd_obj(cmd_str);
+    const std::string& cmd = cmd_obj.get_command();
+
+    if (cmd == "gossip") {
+        if (cmd_obj.get_args().size() < 2) return;
+
+        fun::command_t res_cmd_obj;
+
+        res_cmd_obj.set_command(std::string(1, (char)server_cmd_t::receive_message));
+        res_cmd_obj.add_key_val("target", cmd_obj.get_arg(0));
+
+        std::string text;
+
+        for (int i = 1; i < cmd_obj.get_args().size(); i++) {
+            if (i != 1) {
+                text.append(" ");
+            }
+            
+            text.append(cmd_obj.get_arg(i));
+        }
+
+        res_cmd_obj.add_arg(text);
+
+        state.client.send(res_cmd_obj.build());
+    } else if (cmd == "amogusify" || cmd == "sussify") {
+        // mugusfy
+    }
+}
+
 void space::slave::send_texel(state_t& state, grid_pos_t pos, fun::rgb_t color) {
     if (state.canvas.get_color(pos) == color) return;
     
@@ -123,7 +153,11 @@ void space::slave::process(state_t& state, const fun::network::packet_t& packet)
         case space::server_cmd_t::receive_message: {
             fun::command_t command(packet.data);
 
-            state.messages.emplace_back(command.get_arg(0));
+            if (command.has_key("gossip")) {
+                state.messages.emplace_back(command.get_arg(0), state_t::message_type_t::client_gossip);
+            } else {
+                state.messages.emplace_back(command.get_arg(0), state_t::message_type_t::client_message);
+            }
 
             break;
         }

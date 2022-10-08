@@ -36,7 +36,7 @@ namespace space {
     }
 
 #pragma pack(push, 1)
-    enum class server_cmd_t {
+    enum struct server_cmd_t {
         // receive_pixel,
         // request_pixel,
 
@@ -48,7 +48,13 @@ namespace space {
 
         receive_batch,
 
-        receive_message
+        receive_message,
+        // receive_gossip,
+
+        // receive_server_info,
+
+        // receive_kick,
+        // receive_ban,
     };
 #pragma pack(pop)
 } 

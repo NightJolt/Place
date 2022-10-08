@@ -35,6 +35,17 @@ namespace space {
         float batch_cooldown;
         float batch_max_texels;
 
-        std::vector <std::string> messages;
+        enum struct message_type_t {
+            client_message,
+            client_gossip,
+            client_ping
+        };
+
+        struct message_t {
+            std::string text;
+            message_type_t type;
+        };
+
+        std::vector <message_t> messages;
     };
 }

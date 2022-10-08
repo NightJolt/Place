@@ -12,7 +12,8 @@ namespace space::slave {
     void request_chunk(state_t&, chunk_pos_t);
     void request_all_chunks(state_t&);
     
-    void send_message(state_t& state, const std::string& msg);
+    void send_message(state_t&, const std::string&);
+    void process_command(state_t&, std::string&);
 
     void step(state_t&, float);
     
