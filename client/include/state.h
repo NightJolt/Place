@@ -11,6 +11,7 @@ namespace space {
         brush,
         erase,
         eyedrop,
+        fill,
         select
     };
 

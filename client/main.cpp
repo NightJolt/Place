@@ -1,7 +1,9 @@
 #include "../FunEngine2D/core/include/globals.h"
 #include "../FunEngine2D/core/include/vec2.h"
 #include "../FunEngine2D/core/include/_time.h"
-#include "../FunEngine2D/core/include/render/window_manager.h"
+#include "../FunEngine2D/core/include/render/window/window_manager.h"
+#include "../FunEngine2D/core/include/render/window/window_data.h"
+#include "../FunEngine2D/core/include/render/window/window.h"
 #include "../FunEngine2D/core/include/tools/debugger.h"
 #include "../FunEngine2D/core/include/networking/client.h"
 #include "../FunEngine2D/core/include/networking/server.h"
@@ -15,12 +17,12 @@
 #include "state.h"
 
 int main () {
-    fun::winmgr::init(fun::winmgr::window_data_t("Place Client"));
-    auto* window = fun::winmgr::main_window;
+    fun::render::winmgr::init(fun::render::window_data_t("Place Client"));
+    auto& window = fun::render::winmgr::get_main_window();
 
-    window->set_vsync(false);
-    window->target_framerate(60);
-    window->set_world_view({ 0, 0 }, 64);
+    window.set_vsync(false);
+    window.target_framerate(60);
+    window.set_world_view({ 0, 0 }, 64);
 
     space::state_t state;
     state.tool.mode = space::tool_mode_t::brush;
@@ -30,19 +32,18 @@ int main () {
     state.batch_send_interval = 1.f;
     state.batch_cooldown = state.batch_send_interval;
     
-    while (window->render.isOpen()) {
+    while (window.is_open()) {
         fun::time::recalculate();
-        fun::winmgr::update();
-        fun::input::listen();
-
-        window->world_view.move((fun::input::keyboard_2d() * fun::vec2f_t(1, -1) * window->zoom * 50.f * fun::time::delta_time()).to_sf());
+        fun::render::winmgr::update();
+        fun::input::listen(window.is_focused());
 
         if (fun::input::pressed(sf::Keyboard::B)) state.tool.mode = space::tool_mode_t::brush;
         if (fun::input::pressed(sf::Keyboard::I)) state.tool.mode = space::tool_mode_t::eyedrop;
         if (fun::input::pressed(sf::Keyboard::E)) state.tool.mode = space::tool_mode_t::erase;
+        if (fun::input::pressed(sf::Keyboard::G)) state.tool.mode = space::tool_mode_t::fill;
 
         bool mouse_was_active = false;
-        fun::vec2f_t mouse_pos = window->get_mouse_world_position();
+        fun::vec2f_t mouse_pos = window.get_mouse_world_position();
 
         if (fun::input::hold(sf::Mouse::Left)) {
             switch(state.tool.mode) {
@@ -103,10 +104,41 @@ int main () {
                 }
 
                 case space::tool_mode_t::eyedrop: {
-                    state.tool.color = state.canvas.get_color(space::world_to_grid(window->get_mouse_world_position()));
+                    state.tool.color = state.canvas.get_color(space::world_to_grid(window.get_mouse_world_position()));
                     state.tool.mode = space::tool_mode_t::brush;
 
                     break;
+                }
+
+                case space::tool_mode_t::fill: {
+                    std::queue <fun::vec2i_t> queue;
+                    fun::unordered_map_vec2_t <uint32_t, bool> visited;
+
+                    fun::vec2i_t start = space::world_to_grid(mouse_pos);
+                    fun::rgb_t start_color = state.canvas.get_color(start);
+
+                    fun::rgb_t color = state.tool.color;
+
+                    queue.push(start);
+
+                    uint32_t max_iterations = 10000;
+
+                    while (!queue.empty() && max_iterations--) {
+                        fun::vec2i_t pos = queue.front();
+                        queue.pop();
+
+                        if (visited[pos]) continue;
+                        visited[pos] = true;
+
+                        if (state.canvas.get_color(pos) != start_color) continue;
+
+                        space::slave::send_texel(state, pos, color);
+
+                        queue.push({ pos.x + 1, pos.y });
+                        queue.push({ pos.x - 1, pos.y });
+                        queue.push({ pos.x, pos.y + 1 });
+                        queue.push({ pos.x, pos.y - 1 });
+                    }
                 }
             }
         }
@@ -161,14 +193,14 @@ int main () {
         
         // fun::debugger::display();
 
-        window->draw_world(state.canvas, 0);
+        window.draw_world(state.canvas, 0);
 
-        window->display(sf::Color::Black);
+        window.display(sf::Color::Black);
     }
 
     state.client.disconnect();
 
-    fun::winmgr::close();
+    fun::render::winmgr::close();
 
     return 0;
 };

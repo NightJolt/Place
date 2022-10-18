@@ -1,6 +1,6 @@
 #include "slave.h"
-
 #include "../../FunEngine2D/core/include/tools/debugger.h"
+#include "../../FunEngine2D/core/include/tools/command.h"
 #include "../../common/include/texel_batch.h"
 
 // namespace {
@@ -154,9 +154,9 @@ namespace {
                         }
                     }
                 } else {
-                    command.add_arg(received_cmd.get_arg(0));
+                    command.add_arg(state->clients_data[sender].name + " : " + received_cmd.get_arg(0));
 
-                    state->server.send_all(state->clients_data[sender].name + " : " + command.build());
+                    state->server.send_all(command.build());
                 }
 
                 break;
