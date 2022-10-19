@@ -24,6 +24,12 @@ int main () {
     window.target_framerate(60);
     window.set_world_view({ 0, 0 }, 64);
 
+    window.register_event_handler(sf::Event::MouseWheelMoved, [](fun::render::window_t& window, const sf::Event& event) {
+        float zoom_value = event.mouseWheel.delta > 0 ? .9f : 1.1f;
+        
+        window.zoom_into(window.get_mouse_screen_position(), zoom_value);
+    });
+
     space::state_t state;
     state.tool.mode = space::tool_mode_t::brush;
     state.tool.color = fun::rgb_t::white;
