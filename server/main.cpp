@@ -43,6 +43,9 @@ int main () {
 
     state.server.terminate();
 
+    // make sure all canvas related work is finished
+    state.canvas.key.lock();
+
     fun::render::winmgr::close();
 
     return 0;
