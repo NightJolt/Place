@@ -28,9 +28,14 @@ int main () {
 
     window.register_event_handler(sf::Event::MouseWheelMoved, [](fun::render::window_t& window, const sf::Event& event) {
         float zoom_value = event.mouseWheel.delta > 0 ? .9f : 1.1f;
+        float zoom = window.get_zoom() * zoom_value;
+        
+        if (zoom < .1f || zoom > 5.f) return;
         
         window.zoom_into(window.get_mouse_screen_position(), zoom_value);
     });
+    
+    window.set_cursor_visible(false);
 
     space::state_t state;
     state.tool.mode = space::tool_mode_t::brush;
@@ -40,16 +45,8 @@ int main () {
     state.batch_send_interval = 1.f;
     state.batch_cooldown = state.batch_send_interval;
 
-    sf::Texture texture;
-    texture.loadFromFile("../../resources/textures/focus.png");
-
-    // sf::Sprite focus;
-    // focus.setTexture(texture);
-
     fun::render::sprite_t focus;
-    focus.bind_texture(fun::render::texture_t(&texture, { 1, 1, }));
-    // focus.set_origin({ .15f, .15f });
-    // focus.set_color(fun::rgb_t::white);
+    focus.bind_texture(fun::resources::get_texture("focus"));
     
     while (window.is_open()) {
         fun::time::recalculate();
