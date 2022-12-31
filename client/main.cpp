@@ -4,10 +4,10 @@
 #include "../FunEngine2D/core/include/render/window/window_manager.h"
 #include "../FunEngine2D/core/include/render/window/window_data.h"
 #include "../FunEngine2D/core/include/render/window/window.h"
+#include "../FunEngine2D/core/include/render/sprite.h"
 #include "../FunEngine2D/core/include/tools/debugger.h"
-#include "../FunEngine2D/core/include/networking/client.h"
-#include "../FunEngine2D/core/include/networking/server.h"
 #include "../FunEngine2D/core/include/input.h"
+#include "../FunEngine2D/core/include/resources.h"
 
 #include "../common/include/space.h"
 
@@ -24,6 +24,8 @@ int main () {
     window.target_framerate(60);
     window.set_world_view({ 0, 0 }, 64);
 
+    fun::resources::load_texture("focus", "focus.png");
+
     window.register_event_handler(sf::Event::MouseWheelMoved, [](fun::render::window_t& window, const sf::Event& event) {
         float zoom_value = event.mouseWheel.delta > 0 ? .9f : 1.1f;
         
@@ -37,6 +39,17 @@ int main () {
     state.batch_max_texels = 256;
     state.batch_send_interval = 1.f;
     state.batch_cooldown = state.batch_send_interval;
+
+    sf::Texture texture;
+    texture.loadFromFile("../../resources/textures/focus.png");
+
+    // sf::Sprite focus;
+    // focus.setTexture(texture);
+
+    fun::render::sprite_t focus;
+    focus.bind_texture(fun::render::texture_t(&texture, { 1, 1, }));
+    // focus.set_origin({ .15f, .15f });
+    // focus.set_color(fun::rgb_t::white);
     
     while (window.is_open()) {
         fun::time::recalculate();
@@ -192,6 +205,11 @@ int main () {
         //         }
         //     }
         // }
+
+        auto grid_pos = space::world_to_grid(window.get_mouse_world_position());
+
+        focus.set_position(grid_pos);
+        focus.set_color(state.canvas.get_color(grid_pos).invert());
         
         space::slave::step(state, fun::time::delta_time());
 
@@ -200,8 +218,9 @@ int main () {
         // fun::debugger::display();
 
         window.draw_world(state.canvas, 0);
+        window.draw_world(focus, 1);
 
-        window.display(sf::Color::Black);
+        window.display(fun::rgb_t::black);
     }
 
     state.client.disconnect();
